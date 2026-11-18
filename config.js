@@ -5,6 +5,6 @@
  * 단, "service_role"이나 "secret"이라고 적힌 키는 절대 여기에 넣지 마세요.
  */
 window.OURS_CONFIG = {
-  SUPABASE_URL: 'https://여기에-프로젝트-주소.supabase.co',
-  SUPABASE_ANON_KEY: '여기에 publishable 키(또는 anon public 키)를 붙여넣기'
+  SUPABASE_URL: 'https://ogzhqtlfclbvbahzqfcq.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_sSBYT6dg16imRiiS8e-vLA_NjmHTPjl'
 };
