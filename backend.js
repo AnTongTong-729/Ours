@@ -272,6 +272,7 @@
       const { error } = await client().auth.updateUser({ password: pw });
       if (error) throw new Error(/should be different/i.test(error.message || '') ? '지금 비밀번호와 다른 비밀번호를 적어 주세요.' : '비밀번호를 바꾸지 못했어요: ' + (error.message || ''));
     },
+    refresh(col) { return fetchCol(col).catch(e => console.warn('[ours] 새로고침 실패', col, e)); },
     async isMember() {
       const { data, error } = await client().rpc('is_couple');
       if (error) { console.warn('[ours] is_couple 확인 실패', error); return null; }
