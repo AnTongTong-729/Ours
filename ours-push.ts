@@ -128,6 +128,14 @@ function people(p) {
 const nick = (map, uid) => (map[uid] && map[uid].nickname) || '상대';
 const prefsOf = (map, uid) => Object.assign({}, DEFAULT_PREFS, (map[uid] && map[uid].notify) || {});
 
+const PET_STAGE = ['새끼', '아성체', '성체'];
+function petgrowMessages(p) { // 둘 다 답한 질문이 15개·45개가 되는 순간
+  const stage = Number(p.stage) || 1, opened = Number(p.opened) || 0;
+  const pet = clip(p.name || '토끼', 12), dragon = p.fur === 'dragon';
+  const body = `${pet}${ga(pet)} ${PET_STAGE[stage] || '성체'}가 됐어요!${opened ? ` 토끼캡슐 편지 ${opened}통이 열렸어요 💌` : stage === 2 ? ' 둘이 함께 답한 덕분이에요 ♥' : ''}`;
+  return Object.keys(people(p)).map(u => ({ to: u, cat: 'qa', title: dragon ? '드래곤이 자랐어요 🐉' : '토끼가 자랐어요 🐰', body, url: opened ? './#letters' : './#rabbit', tag: 'petgrow-' + stage }));
+}
+
 function changeMessages(p) {
   const map = people(p); const d = p.data || {}; const col = p.col;
   const actor = d.author || d.uid; const name = nick(map, actor); const j = ga(name);
@@ -150,7 +158,10 @@ function changeMessages(p) {
     }
     case 'answers': return others.map(u => ({ to: u, cat: 'qa', title: '오늘의 질문', body: `${name}${j} 질문에 답했어요. 내 답을 쓰면 볼 수 있어요`, url: './#question', tag: 'answer-' + (d.date || '') }));
     case 'drawings': return others.map(u => ({ to: u, cat: 'qa', title: '오늘의 그림', body: `${name}${j} 그림을 그렸어요. 내 그림을 올리면 볼 수 있어요`, url: './#drawing', tag: 'drawing-' + (d.date || '') }));
-    case 'letters': return to([d.to]).filter(u => u !== actor).map(u => ({ to: u, cat: 'dates', title: '타임캡슐 편지', body: `${name}${j} 편지를 남겼어요. ${d.openAt ? md(d.openAt) + '에 열려요' : ''}`, url: './#letters', tag: 'letter-' + (d.openAt || '') }));
+    case 'letters': {
+      const when = d.openStage ? `토끼가 ${PET_STAGE[d.openStage] || '다음 단계'}가 되면 열려요` : d.openAt ? md(d.openAt) + '에 열려요' : '';
+      return to([d.to]).filter(u => u !== actor).map(u => ({ to: u, cat: 'dates', title: d.openStage ? '토끼캡슐 편지' : '타임캡슐 편지', body: `${name}${j} 편지를 남겼어요. ${when}`.trim(), url: './#letters', tag: 'letter-' + (d.openStage ? 'pet' + d.openStage : d.openAt || '') }));
+    }
     case 'plans': return others.map(u => ({ to: u, cat: 'dates', title: '새 약속', body: `${name}${j} 약속을 추가했어요: ${clip(d.title, 30)}${d.date ? ' (' + md(d.date) + ')' : ''}`, url: './#calendar', tag: 'plan-' + (d.date || '') }));
     case 'pings': return to([d.to]).map(u => ({ to: u, cat: 'test', title: 'ours', body: '알림이 잘 와요! 이제 소식을 놓치지 않을 거예요 ♥', url: './#profile', tag: 'ping' }));
     default: return [];
@@ -214,7 +225,7 @@ async function handler(req) {
   try { signKey = await importVapid(p.vapidPrivate, VAPID_PUBLIC); }
   catch (_) { return new Response('forbidden', { status: 403 }); }
   const map = people(p);
-  const msgs = p.type === 'tick' ? tickMessages(p, Date.now()) : changeMessages(p);
+  const msgs = p.type === 'tick' ? tickMessages(p, Date.now()) : p.type === 'petgrow' ? petgrowMessages(p) : changeMessages(p);
   const fresh = Date.now() - 120 * 86400000;
   const subs = (p.subs || []).filter(s => s && s.uid && s.endpoint && s.keys && s.keys.p256dh && s.keys.auth && (s.updatedAt || 0) > fresh);
   const jobs = [];
@@ -230,4 +241,4 @@ async function handler(req) {
 }
 
 if (typeof Deno !== 'undefined') Deno.serve(handler);
-export { handler, encryptPayload, vapidAuth, importVapid, changeMessages, tickMessages };
+export { handler, encryptPayload, vapidAuth, importVapid, changeMessages, tickMessages, petgrowMessages };
