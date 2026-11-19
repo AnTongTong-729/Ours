@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#000000">
 <script>try{var t=localStorage.getItem('ours-theme')||'dark';if(t==='light'||(t==='auto'&&matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.dataset.theme='light';document.querySelector('meta[name=theme-color]').setAttribute('content','#f7f4f6');}else document.documentElement.dataset.theme='dark';}catch(e){}</script>
 <title>ours</title>
@@ -788,6 +788,11 @@ textarea:focus,input[type=text]:focus,input[type=email]:focus,input[type=passwor
 .set-foot{text-align:center;color:var(--muted);font-size:12px;margin:22px 0 0;font-family:var(--font-logo);font-size:20px;opacity:.6}
 .link-row{cursor:pointer}
 .link-row:active{background:var(--field)}
+
+/* iPhone zooms the whole page when a text box under 16px is tapped, and then stays zoomed.
+   Every text box is 16px or more, and double-tap zoom is off (pinch zoom still works). */
+html{touch-action:manipulation}
+input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):not(#ed-ta){font-size:16px!important}
 </style>
 </head>
 <body>
