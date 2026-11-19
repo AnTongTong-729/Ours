@@ -1,3 +1,4 @@
+// @ts-nocheck
 // =====================================================================
 // ours — 알림 보내는 서버 코드 (Supabase Edge Function: ours-push)
 // Supabase 대시보드 > Edge Functions > Deploy a new function > Via Editor 에
@@ -11,7 +12,7 @@
 // =====================================================================
 
 const VAPID_PUBLIC = 'BMdps_eoP3MFWjiqAffFf0uYL9v7W0Wc96MJldrgmLGN3gP4eFHZVwL-1Vmuv4-nS7aKoLQhloanxblZlmIWFR4';
-const DEFAULT_PREFS = { post: true, comment: true, qa: true, daily: true, dates: true, hour: 9 };
+const DEFAULT_PREFS = { post: true, comment: true, like: true, qa: true, daily: true, dates: true, hour: 9 };
 const te = new TextEncoder();
 
 /* ---------- 작은 도구들 ---------- */
@@ -135,7 +136,17 @@ function changeMessages(p) {
   switch (col) {
     case 'posts': return others.map(u => ({ to: u, cat: 'post', title: 'ours', body: `${name}${j} 새 사진을 올렸어요${d.caption ? ' · ' + clip(d.caption, 40) : ''}`, url: './#home', tag: 'post-' + actor }));
     case 'stories': return others.map(u => ({ to: u, cat: 'post', title: 'ours', body: `${name}${j} 스토리를 올렸어요`, url: './#home', tag: 'story-' + actor }));
-    case 'comments': return others.map(u => ({ to: u, cat: 'comment', title: '새 댓글', body: `${name}: ${clip(d.text, 60)}`, url: './#home', tag: 'comment-' + (d.postId || '') }));
+    case 'comments': {
+      const title = d.storyId ? (d.parentId ? '스토리 답장에 답글' : '스토리 답장') : d.parentId ? '새 답글' : '새 댓글';
+      const who = d.storyId && !d.parentId && d.storyAuthor ? [d.storyAuthor] : d.parentId && d.replyTo ? [d.replyTo] : others;
+      return to(who).filter(u => u !== actor).map(u => ({ to: u, cat: 'comment', title, body: `${name}: ${clip(d.text, 60)}`, url: './#home', tag: 'comment-' + (d.postId || d.storyId || '') }));
+    }
+    case 'likes': case 'storylikes': {
+      // here d.author is the owner of the photo; the person who tapped the heart is d.uid
+      const liker = d.uid, ln = nick(map, liker), lj = ga(ln);
+      const owners = to(d.author ? [d.author] : Object.keys(map)).filter(u => u !== liker);
+      return owners.map(u => ({ to: u, cat: 'like', title: 'ours', body: col === 'likes' ? `${ln}${lj} 내 사진을 좋아해요 ♥` : `${ln}${lj} 내 스토리에 하트를 보냈어요 ♥`, url: './#home', tag: (col === 'likes' ? 'like-' + (d.postId || '') : 'storylike-' + (d.storyId || '')) }));
+    }
     case 'answers': return others.map(u => ({ to: u, cat: 'qa', title: '오늘의 질문', body: `${name}${j} 질문에 답했어요. 내 답을 쓰면 볼 수 있어요`, url: './#question', tag: 'answer-' + (d.date || '') }));
     case 'drawings': return others.map(u => ({ to: u, cat: 'qa', title: '오늘의 그림', body: `${name}${j} 그림을 그렸어요. 내 그림을 올리면 볼 수 있어요`, url: './#drawing', tag: 'drawing-' + (d.date || '') }));
     case 'letters': return to([d.to]).filter(u => u !== actor).map(u => ({ to: u, cat: 'dates', title: '타임캡슐 편지', body: `${name}${j} 편지를 남겼어요. ${d.openAt ? md(d.openAt) + '에 열려요' : ''}`, url: './#letters', tag: 'letter-' + (d.openAt || '') }));
