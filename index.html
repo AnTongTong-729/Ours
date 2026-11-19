@@ -793,6 +793,49 @@ textarea:focus,input[type=text]:focus,input[type=email]:focus,input[type=passwor
    Every text box is 16px or more, and double-tap zoom is off (pinch zoom still works). */
 html{touch-action:manipulation}
 input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):not(#ed-ta){font-size:16px!important}
+
+/* ===== v5: feel — springy viewer, sheets, screens; mentions ===== */
+.viewer{background:transparent}
+.vw-bg{position:absolute;inset:0;background:#000}
+.vw-card{position:absolute;inset:0;overflow:hidden;background:#000;transform-origin:50% 42%;will-change:transform}
+.viewer.opening .vw-card{animation:vwIn .42s cubic-bezier(.2,1.15,.35,1)}
+.viewer.opening .vw-bg{animation:fade .25s ease-out}
+.viewer.closing{pointer-events:none}
+@keyframes vwIn{from{transform:scale(.88);opacity:0;border-radius:28px}}
+.sheet{animation:sheetUp .5s cubic-bezier(.2,1.12,.35,1)}
+@keyframes sheetUp{from{transform:translate3d(0,100%,0)}}
+.overlay{animation:fade .22s ease-out;transition:background-color .26s ease-out}
+.overlay.closing{pointer-events:none;background-color:rgba(0,0,0,0)!important;-webkit-backdrop-filter:none;backdrop-filter:none}
+.sh-grab{position:relative}
+.sh-grab::after{content:"";position:absolute;left:-40px;right:-40px;top:-10px;bottom:-12px}
+.v-fade{animation:vFade .34s cubic-bezier(.2,.8,.2,1)}
+.v-push{animation:vPush .42s cubic-bezier(.2,.95,.25,1)}
+.v-pop{animation:vPop .42s cubic-bezier(.2,.95,.25,1)}
+.v-drag{position:relative;z-index:1;background:var(--bg);-webkit-user-select:none;user-select:none;box-shadow:-16px 0 36px rgba(0,0,0,.3);min-height:100vh}
+@keyframes vFade{from{opacity:0;transform:translate3d(0,10px,0)}}
+@keyframes vPush{from{opacity:.3;transform:translate3d(32%,0,0)}}
+@keyframes vPop{from{opacity:.3;transform:translate3d(-22%,0,0)}}
+.ptr{position:fixed;top:64px;left:50%;z-index:15;width:36px;height:36px;display:grid;place-items:center;color:var(--pink);opacity:0;transform:translate3d(-50%,-30px,0) scale(.5);pointer-events:none}
+.ptr svg{width:28px;height:28px;transition:filter .2s}
+.ptr.ready svg{filter:drop-shadow(0 0 10px rgba(255,79,154,.7))}
+.ptr.spin svg{animation:beat .75s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}30%{transform:scale(1.22)}55%{transform:scale(.94)}}
+/* press feedback, like iPhone buttons */
+.btn,.ic,.act,.story,.vw-ib,.hl,.tabs a,.seg button,.chips button,.ed-chip,.dd-links button,.cal-nav,.tile,.pk-img,.set-row.link-row,.vw-seen,.mention-pop button{transition:transform .22s cubic-bezier(.2,1.5,.4,1),background-color .15s,opacity .15s}
+.btn:active,.dd-links button:active,.vw-seen:active{transform:scale(.96)}
+.ic:active,.act:active,.vw-ib:active,.tabs a:active,.cal-nav:active{transform:scale(.86)}
+.story:active,.hl:active{transform:scale(.93)}
+.tile:active,.pk-img:active{transform:scale(.97);opacity:.85}
+.seg button:active,.chips button:active,.ed-chip:active{transform:scale(.95)}
+/* mentions */
+.mention{display:inline;padding:0;margin:0 1px;font:inherit;color:var(--pink);font-family:var(--font-cute);font-size:.92em;vertical-align:baseline}
+.viewer .mention{color:#ffb3d4}
+.vw-men{display:inline-flex;gap:6px;margin-left:6px}
+.vw-men .mention{background:rgba(255,255,255,.18);color:#fff;padding:1px 8px;border-radius:999px;font-size:12.5px}
+.mention-pop{position:fixed;z-index:130;display:flex;gap:6px;padding:6px;border-radius:16px;background:var(--surface);border:.5px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.28);max-width:calc(100vw - 16px);overflow-x:auto}
+.mention-pop button{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:12px;white-space:nowrap}
+.mention-pop button:active{background:var(--field);transform:scale(.96)}
+.mention-pop b{font-family:var(--font-cute);font-weight:400;color:var(--pink);font-size:15px}
 </style>
 </head>
 <body>
@@ -906,11 +949,16 @@ input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):n
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="viewer" class="viewer" role="dialog" aria-modal="true" aria-label="사진 보기" hidden>
+  <div class="vw-bg" id="vw-bg"></div>
+  <div class="vw-card" id="vw-card">
   <div class="vw-stage" id="vw-stage"><img id="vw-img" alt="" draggable="false"></div>
   <div class="vw-bars" id="vw-bars"></div>
   <div class="vw-head"><span id="vw-who" style="display:flex;align-items:center;gap:8px;min-width:0"></span><span class="vw-sp"></span><span id="vw-tools"></span><button class="ic" type="button" data-act="vw-close" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="vw-foot" id="vw-foot"></div>
+  </div>
 </div>
+<div class="ptr" id="ptr" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.3s-7.6-4.5-9.4-9.4C1.4 7.6 3.5 4.3 6.9 4.3c2.2 0 3.7 1.3 5.1 3.1 1.4-1.8 2.9-3.1 5.1-3.1 3.4 0 5.5 3.3 4.3 6.6-1.8 4.9-9.4 9.4-9.4 9.4z"/></svg></div>
+<div class="mention-pop" id="mention-pop" role="listbox" aria-label="언급할 사람" hidden></div>
 <div id="editor" class="ed" role="dialog" aria-modal="true" aria-label="사진 편집" hidden>
   <div class="ed-top">
     <button class="ed-ic" type="button" data-ed="cancel" aria-label="편집 그만하기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
@@ -1398,7 +1446,7 @@ function mediaHTML(p) {
   const ims = (p.images || []).filter(im => im && im.id); if (!ims.length) return '';
   const r = Math.min(1.91, Math.max(0.8, (ims[0].w || 1) / (ims[0].h || 1)));
   const n = ims.length, caps = ims.map(pcapText), anyCap = n > 1 && caps.some(Boolean);
-  const pc = anyCap ? `<p class="pcap ${hw(p.author)}${caps[0] ? '' : ' empty'}"><span class="pc-n">1/${n}</span><span class="pc-t">${esc(caps[0])}</span></p>` : '';
+  const pc = anyCap ? `<p class="pcap ${hw(p.author)}${caps[0] ? '' : ' empty'}"><span class="pc-n">1/${n}</span><span class="pc-t">${rich(caps[0])}</span></p>` : '';
   return `<div class="media" data-id="${esc(p.id)}"><div class="carousel" style="aspect-ratio:${r.toFixed(3)}">${ims.map((im, i) => `<div class="slide"${anyCap ? ` data-cap="${esc(caps[i])}"` : ''}><img src="${blobUrl(im.id)}" alt="${esc(nameOf(p.author))}의 사진 ${i + 1}" loading="lazy" draggable="false"></div>`).join('')}</div>${n > 1 ? `<span class="badge">1/${n}</span><div class="dots">${ims.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><button class="arrow prev" type="button" data-act="slide" data-dir="-1" aria-label="이전 사진">‹</button><button class="arrow next" type="button" data-act="slide" data-dir="1" aria-label="다음 사진">›</button>` : ''}<div class="burst" aria-hidden="true">${ICON.heartFill}</div></div>${pc}`;
 }
 function cardParts(it) {
@@ -1417,9 +1465,9 @@ function cardParts(it) {
     <button class="act${reposted ? ' on' : ''}" type="button" data-act="repost" data-id="${id}" aria-pressed="${reposted}" aria-label="리포스트">${ICON.repost}${reps.length ? `<span>${reps.length}</span>` : ''}</button>
   </div>`;
   body += likeLine(likes);
-  if (p.caption) body += `<p class="cap"><b>${esc(nameOf(p.author))}</b><span class="${hw(p.author)}">${esc(p.caption)}</span></p>`;
+  if (p.caption) body += `<p class="cap"><b>${esc(nameOf(p.author))}</b><span class="${hw(p.author)}">${rich(p.caption)}</span></p>`;
   if (cmts.length > 2) body += `<button class="more" type="button" data-act="comments" data-id="${id}">댓글 ${cmts.length}개 모두 보기</button>`;
-  body += cmts.slice(-2).map(c => `<p class="cmt"><b>${esc(nameOf(c.uid))}</b><span class="${hw(c.uid)}">${esc(c.text)}</span></p>`).join('');
+  body += cmts.slice(-2).map(c => `<p class="cmt"><b>${esc(nameOf(c.uid))}</b><span class="${hw(c.uid)}">${rich(c.text)}</span></p>`).join('');
   if (!cmts.length) body += `<button class="more" type="button" data-act="comments" data-id="${id}">댓글 달기…</button>`;
   body += `<time class="when">${timeAgo(p.createdAt)}</time>`;
   return { top, media: mediaHTML(p), body };
@@ -1640,7 +1688,8 @@ async function createPost() {
     }
     st.textContent = '게시하는 중…';
     const caption = $('#cap-in').value.trim();
-    const ok = await write(() => S.db.collection('posts').doc().set({ author: S.myId, images, caption, createdAt: Date.now() }));
+    const men = findMentions(caption, ...images.map(im => im.caption));
+    const ok = await write(() => S.db.collection('posts').doc().set(Object.assign({ author: S.myId, images, caption, createdAt: Date.now() }, men.length ? { mentions: men } : {})));
     if (!ok) throw { code: '_handled' };
     picked.forEach(p => URL.revokeObjectURL(p.url)); picked.length = 0; renderPicked();
     $('#cap-in').value = ''; st.textContent = '';
@@ -1674,6 +1723,7 @@ async function toggleLike(postId, onlyOn) {
   const liked = S.likes.some(l => l.postId === postId && l.uid === S.myId);
   if (onlyOn && liked) return;
   S.pendingLikes.add(k);
+  if (!liked) Haptic.tap();
   await write(() => liked ? S.db.doc('likes/' + k).delete() : S.db.doc('likes/' + k).set({ postId, uid: S.myId, author: (IDX.posts[postId] || {}).author || '', createdAt: Date.now() }));
   S.pendingLikes.delete(k);
 }
@@ -1692,6 +1742,7 @@ async function sendComment() {
   const inp = $('#cmt-in'); const text = ((inp && inp.value) || '').trim(); const sh = S.sheet; if (!text || !sh) return;
   const doc = sh.storyId ? { storyId: sh.storyId, storyAuthor: (storyById(sh.storyId) || {}).author || '' } : { postId: sh.postId };
   if (sh.replyTo) Object.assign(doc, { parentId: sh.replyTo.id, replyTo: sh.replyTo.uid });
+  const men = findMentions(text); if (men.length) doc.mentions = men;
   inp.disabled = true;
   const ok = await write(() => S.db.collection('comments').add(Object.assign(doc, { uid: S.myId, text, createdAt: Date.now() })));
   inp.disabled = false;
@@ -1793,16 +1844,17 @@ function activityItems() {
   for (const c of S.comments) {
     if (c.uid === me) continue;
     const par = c.parentId && cById[c.parentId];
-    if (par && (par.uid === me || c.replyTo === me)) it.push({ at: c.createdAt, uid: c.uid, kind: 'reply', postId: c.postId, storyId: c.storyId, text: c.text });
+    if ((c.mentions || []).includes(me)) it.push({ at: c.createdAt, uid: c.uid, kind: 'mention', postId: c.postId, storyId: c.storyId, text: c.text });
+    else if (par && (par.uid === me || c.replyTo === me)) it.push({ at: c.createdAt, uid: c.uid, kind: 'reply', postId: c.postId, storyId: c.storyId, text: c.text });
     else if (c.postId && mineP.has(c.postId)) it.push({ at: c.createdAt, uid: c.uid, kind: 'comment', postId: c.postId, text: c.text });
     else if (c.storyId && (myStory.has(c.storyId) || c.storyAuthor === me)) it.push({ at: c.createdAt, uid: c.uid, kind: 'storycomment', storyId: c.storyId, text: c.text });
   }
   for (const l of S.storylikes) if (l.uid !== me && (myStory.has(l.storyId) || l.author === me)) it.push({ at: l.createdAt, uid: l.uid, kind: 'storylike', storyId: l.storyId });
   for (const r of S.reposts) if (r.uid !== me && mineP.has(r.postId)) it.push({ at: r.createdAt, uid: r.uid, kind: 'repost', postId: r.postId });
-  for (const p of S.posts) if (p.author !== me) it.push({ at: p.createdAt, uid: p.author, kind: 'post', postId: p.id });
+  for (const p of S.posts) if (p.author !== me) it.push({ at: p.createdAt, uid: p.author, kind: (p.mentions || []).includes(me) ? 'mentionpost' : 'post', postId: p.id });
   for (const a of S.answers) if (a.uid !== me) it.push({ at: a.createdAt, uid: a.uid, kind: 'answer', date: a.date });
   for (const d of S.drawings) if (d.uid !== me) it.push({ at: d.updatedAt || d.createdAt, uid: d.uid, kind: 'drawing', date: d.date });
-  for (const x of S.stories) if (x.author !== me) it.push({ at: x.createdAt, uid: x.author, kind: 'story', storyId: x.id });
+  for (const x of S.stories) if (x.author !== me) it.push({ at: x.createdAt, uid: x.author, kind: (x.mentions || []).includes(me) ? 'mentionstory' : 'story', storyId: x.id });
   for (const l of S.letters) if (l.to === me) it.push({ at: l.createdAt, uid: l.author, kind: 'letter', date: l.openAt });
   for (const pl of S.plans) if (pl.author !== me) it.push({ at: pl.createdAt, uid: pl.author, kind: 'plan', date: pl.date, text: pl.title });
   return it.filter(x => x.at).sort((a, b) => b.at - a.at).slice(0, 60);
@@ -1818,6 +1870,9 @@ function activityHTML() {
     else if (x.kind === 'reply') t = `${j} 내 댓글에 답글을 남겼어요: <span class="${hw(x.uid)}">${esc(x.text)}</span>`;
     else if (x.kind === 'storycomment') t = `${j} 내 스토리에 답장했어요: <span class="${hw(x.uid)}">${esc(x.text)}</span>`;
     else if (x.kind === 'storylike') t = `${j} 내 스토리에 하트를 보냈어요 ♥`;
+    else if (x.kind === 'mention') t = `${j} ${x.storyId ? '스토리 답장' : '댓글'}에서 나를 언급했어요: <span class="${hw(x.uid)}">${rich(x.text)}</span>`;
+    else if (x.kind === 'mentionpost') t = `${j} 게시물에서 나를 언급했어요`;
+    else if (x.kind === 'mentionstory') t = `${j} 스토리에서 나를 언급했어요`;
     else if (x.kind === 'repost') t = `${j} 내 사진을 리포스트했어요`;
     else if (x.kind === 'post') t = `${j} 새 사진을 올렸어요`;
     else if (x.kind === 'answer') t = `${j} ${x.date === todayKey() ? '오늘의' : shortKey(x.date)} 질문에 답했어요`;
@@ -1873,7 +1928,9 @@ function openSheet(type, args = {}) {
       <form class="form" id="onb-form"><label class="lbl" for="onb-name">이름</label><input type="text" id="onb-name" maxlength="20" autocomplete="off">
       <div class="ans-head" style="margin-top:4px"><b>내 글씨체</b><span class="t">나중에 바꿀 수 있어요</span></div>${fontPickerHTML(S.pendingFont)}<button class="btn primary block" type="submit">시작하기</button></form>
       <div id="onb-adopt"></div></div>`;
-  sh.innerHTML = h; ov.hidden = false; document.body.classList.add('locked');
+  S._shTok = (S._shTok || 0) + 1; ov.classList.remove('closing'); ov.style.transition = ''; ov.style.backgroundColor = ''; sh.style.transition = ''; sh.style.transform = '';
+  sh.innerHTML = h; const wasHidden = ov.hidden; ov.hidden = false; document.body.classList.add('locked');
+  if (!wasHidden) { sh.style.animation = 'none'; void sh.offsetWidth; sh.style.animation = ''; }
   if (type === 'editprofile') { const p = profileOf(S.myId) || {}; $('#ep-name').value = p.nickname || nameOf(S.myId); $('#ep-bio').value = p.bio || ''; $('#ep-bday').value = p.birthday || ''; S.pendingAvatar = null; }
   if (type === 'onboard') $('#onb-name').value = S.myName || '';
   if (type === 'activity') { S.sheet.seenBefore = S.lastSeen; setSeen(Date.now()); }
@@ -1882,10 +1939,17 @@ function openSheet(type, args = {}) {
   renderSheet();
   const f = $('#cmt-in, #rp-note, #onb-name, #ep-name, #pl-title, #an-title, #lw-title, #myq-in, #hl-title', sh); if (f && window.matchMedia('(hover:hover)').matches) f.focus();
 }
-function closeSheet(force) {
+function closeSheet(force, anim) {
   if (!S.sheet) return;
   if (S.sheet.type === 'onboard' && !force && !profileOf(S.myId)) return;
-  S.sheet = null; S.pendingAvatar = null; S.pendingFont = null; $('#overlay').hidden = true;
+  S.sheet = null; S.pendingAvatar = null; S.pendingFont = null;
+  const ov = $('#overlay'), sh = $('.sheet', ov), tok = (S._shTok = (S._shTok || 0) + 1);
+  const reset = () => { ov.classList.remove('closing'); ov.style.transition = ''; ov.style.backgroundColor = ''; sh.style.transition = ''; sh.style.transform = ''; };
+  if (anim && !reduceMotion()) {
+    if (document.activeElement && sh.contains(document.activeElement)) document.activeElement.blur();
+    ov.classList.add('closing'); sh.style.transition = `transform .26s ${EASE_OUT}`; sh.style.transform = 'translate3d(0,105%,0)';
+    setTimeout(() => { if (S._shTok === tok) { ov.hidden = true; reset(); } }, 250);
+  } else { ov.hidden = true; reset(); }
   if (Viewer.isOpen()) Viewer.paused = false; else document.body.classList.remove('locked');
   render();
 }
@@ -1900,7 +1964,7 @@ function renderSheet() {
     } else {
       const p = IDX.posts[s.postId]; if (!p) { if (S.loaded.posts) closeSheet(true); return; }
       list = IDX.comments[p.id] || [];
-      if (p.caption) h += `<div class="c-item">${avatar(p.author, 32)}<div><p><b>${esc(nameOf(p.author))}</b><span class="${hw(p.author)}">${esc(p.caption)}</span></p><div class="c-meta"><span>${timeAgo(p.createdAt)}</span></div></div></div><div class="sep-line"></div>`;
+      if (p.caption) h += `<div class="c-item">${avatar(p.author, 32)}<div><p><b>${esc(nameOf(p.author))}</b><span class="${hw(p.author)}">${rich(p.caption)}</span></p><div class="c-meta"><span>${timeAgo(p.createdAt)}</span></div></div></div><div class="sep-line"></div>`;
     }
     h += list.length ? commentRows(list) : `<p class="empty sm">${s.storyId ? '아직 답장이 없어요. 첫 답장을 남겨 보세요.' : '아직 댓글이 없어요. 첫 댓글을 남겨 보세요.'}</p>`;
     patch($('#sh-list'), h); patch($('#cmt-av'), avatar(S.myId, 32)); const ci = $('#cmt-in'); if (ci && ci.className !== hw(S.myId)) ci.className = hw(S.myId);
@@ -2245,7 +2309,7 @@ async function deleteLetter(id) {
 function seenStories() { if (!S._seenStories) { try { S._seenStories = new Set(JSON.parse(localStorage.getItem('ours-seen-stories') || '[]')); } catch (e) { S._seenStories = new Set(); } } return S._seenStories; }
 function markStorySeen(id) { const s = seenStories(); if (s.has(id)) return; s.add(id); try { localStorage.setItem('ours-seen-stories', JSON.stringify([...s].slice(-400))); } catch (e) { /* ignore */ } }
 const activeStories = uid => S.stories.filter(x => x.author === uid && x.image && Date.now() - (x.createdAt || 0) < DAY_MS).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-const storyItem = x => ({ imageId: x.image.id, author: x.author, createdAt: x.createdAt, kind: 'story', ref: x.id });
+const storyItem = x => ({ imageId: x.image.id, author: x.author, createdAt: x.createdAt, kind: 'story', ref: x.id, mentions: x.mentions || [] });
 function postItems(posts) {
   const out = [];
   for (const p of posts) (p.images || []).forEach((im, i) => { if (im && im.id) out.push({ imageId: im.id, author: p.author, createdAt: (p.createdAt || 0) + i, kind: 'post', ref: p.id, i, caption: p.caption || '', pcap: pcapText(im), n: (p.images || []).length }); });
@@ -2269,14 +2333,51 @@ const Viewer = {
   isOpen() { return !$('#viewer').hidden; },
   open(items, i, opts) {
     if (!items || !items.length) return;
+    clearTimeout(this._ct); this.closing = false; this.resetCard();
     this.items = items; this.i = Math.max(0, Math.min(i || 0, items.length - 1)); this.opts = opts || {}; this.auto = !!this.opts.auto;
-    $('#viewer').hidden = false; document.body.classList.add('locked'); this.show();
+    const v = $('#viewer'); v.hidden = false; document.body.classList.add('locked');
+    if (!reduceMotion()) { v.classList.remove('opening'); void v.offsetWidth; v.classList.add('opening'); clearTimeout(this._ot); this._ot = setTimeout(() => v.classList.remove('opening'), 450); }
+    this.show();
+  },
+  resetCard() {
+    const c = $('#vw-card'), b = $('#vw-bg');
+    for (const el of [c, b]) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; el.style.borderRadius = ''; }
+    $('#viewer').classList.remove('closing');
   },
   close() {
-    cancelAnimationFrame(this.raf); this.raf = 0;
-    $('#viewer').hidden = true; this.items = [];
+    cancelAnimationFrame(this.raf); this.raf = 0; clearTimeout(this._ct); this.closing = false;
+    $('#viewer').hidden = true; this.items = []; this.resetCard();
     if (!S.sheet) document.body.classList.remove('locked');
     render();
+  },
+  finishClose(ms) { this.closing = true; $('#viewer').classList.add('closing'); cancelAnimationFrame(this.raf); clearTimeout(this._ct); this._ct = setTimeout(() => this.close(), ms); },
+  dismiss(x, y, vy) {
+    if (reduceMotion()) { this.close(); return; }
+    const c = $('#vw-card'), b = $('#vw-bg'), ms = Math.round(Math.max(180, Math.min(300, 260 - (vy || 0) * 60)));
+    c.style.transition = `transform ${ms}ms ${EASE_OUT}, opacity ${ms}ms ${EASE_OUT}, border-radius ${ms}ms`; b.style.transition = `opacity ${ms}ms ${EASE_OUT}`;
+    c.style.transform = `translate3d(${x || 0}px,${Math.max(innerHeight * 0.45, (y || 0) + innerHeight * 0.3)}px,0) scale(.42)`; c.style.opacity = 0; c.style.borderRadius = '36px'; b.style.opacity = 0;
+    this.finishClose(ms);
+  },
+  closeAnim() {
+    if (reduceMotion()) { this.close(); return; }
+    const c = $('#vw-card'), b = $('#vw-bg');
+    c.style.transition = `transform .2s ${EASE_OUT}, opacity .2s ${EASE_OUT}`; b.style.transition = `opacity .2s ${EASE_OUT}`;
+    c.style.transform = 'scale(.92)'; c.style.opacity = 0; b.style.opacity = 0;
+    this.finishClose(190);
+  },
+  slide(dir) {
+    if (dir > 0 && this.i >= this.items.length - 1) { this.dismiss(-innerWidth * 0.25, 0, 0); return; }
+    if (dir < 0 && this.i <= 0) return;
+    const c = $('#vw-card'), W = innerWidth;
+    if (reduceMotion()) { this.i += dir; this.show(); this.resetCard(); return; }
+    this.paused = true;
+    c.style.transition = `transform .18s ${EASE_IN}, border-radius .18s`; c.style.transform = `translate3d(${-dir * W}px,0,0) scale(.94)`; c.style.borderRadius = '24px';
+    clearTimeout(this._st);
+    this._st = setTimeout(() => {
+      this.i += dir; this.show();
+      c.style.transition = 'none'; c.style.transform = `translate3d(${dir * W * 0.7}px,0,0) scale(.94)`; void c.offsetWidth;
+      c.style.transition = `transform .5s ${SPRING}, border-radius .35s ${EASE_OUT}`; c.style.transform = ''; c.style.borderRadius = '';
+    }, 170);
   },
   current() { return this.items[this.i]; },
   show() {
@@ -2306,7 +2407,8 @@ const Viewer = {
     const n = this.items.length;
     patch($('#vw-bars'), n <= 40 ? this.items.map((_, j) => `<i class="${j < this.i ? 'done' : j === this.i ? 'cur' : ''}"><b${j === this.i && !this.auto ? ' style="width:100%"' : ''}></b></i>`).join('') : `<span class="cnt">${this.i + 1} / ${n}</span>`);
     const when = it.kind === 'drawing' ? mdKo(it.date) : timeAgo(it.createdAt);
-    patch($('#vw-who'), `${avatar(it.author, 32)}<span style="min-width:0"><span class="nm">${esc(this.opts.title || nameOf(it.author))}</span> <small>${esc(this.opts.title ? nameOf(it.author) + ' · ' + when : when)}</small></span>`);
+    const men = (it.mentions || []).length ? `<span class="vw-men">${it.mentions.map(u => `<button type="button" class="mention" data-act="profile" data-uid="${esc(u)}">@${esc(nameOf(u))}</button>`).join('')}</span>` : '';
+    patch($('#vw-who'), `${avatar(it.author, 32)}<span style="min-width:0"><span class="nm">${esc(this.opts.title || nameOf(it.author))}</span> <small>${esc(this.opts.title ? nameOf(it.author) + ' · ' + when : when)}</small>${men}</span>`);
     let tools = '', foot = '';
     const own = it.author === S.myId && S.mode === 'live' && S.canWrite;
     if (this.opts.hl && this.opts.hl.author === S.myId) tools += `<button class="ic sm" type="button" data-act="hl-edit" data-id="${esc(this.opts.hl.id)}" aria-label="하이라이트 편집">${ICON2.edit}</button>`;
@@ -2319,7 +2421,7 @@ const Viewer = {
         else foot = storyFootHTML(it, false, this.opts.hl);
       }
     } else if (it.kind === 'post') {
-      foot = `${it.pcap ? `<p class="cap pc"><span class="pc-n">${(it.i || 0) + 1}/${it.n}</span><span class="${hw(it.author)}">${esc(it.pcap)}</span></p>` : ''}${it.caption ? `<p class="cap${it.pcap ? ' sub' : ''}"><b>${esc(nameOf(it.author))}</b><span class="${hw(it.author)}">${esc(it.caption)}</span></p>` : ''}<div class="row">${it.n > 1 ? `<span class="muted" style="font-size:13px">${(it.i || 0) + 1}/${it.n}장</span>` : ''}<button class="btn ghost" type="button" data-act="vw-open-post" style="margin-left:auto">${ICON.comment}댓글·좋아요</button>${own && !this.opts.hl ? `<button class="btn ghost" type="button" data-act="vw-hl-add">${ICON.heart}하이라이트</button>` : ''}</div>`;
+      foot = `${it.pcap ? `<p class="cap pc"><span class="pc-n">${(it.i || 0) + 1}/${it.n}</span><span class="${hw(it.author)}">${rich(it.pcap)}</span></p>` : ''}${it.caption ? `<p class="cap${it.pcap ? ' sub' : ''}"><b>${esc(nameOf(it.author))}</b><span class="${hw(it.author)}">${rich(it.caption)}</span></p>` : ''}<div class="row">${it.n > 1 ? `<span class="muted" style="font-size:13px">${(it.i || 0) + 1}/${it.n}장</span>` : ''}<button class="btn ghost" type="button" data-act="vw-open-post" style="margin-left:auto">${ICON.comment}댓글·좋아요</button>${own && !this.opts.hl ? `<button class="btn ghost" type="button" data-act="vw-hl-add">${ICON.heart}하이라이트</button>` : ''}</div>`;
     } else if (it.kind === 'drawing') {
       foot = `<p class="mini-q">${esc(topicFor(it.date))}</p><div class="row"><button class="btn ghost" type="button" data-act="vw-drawing">${ICON.brush}그날의 그림 보기</button></div>`;
     }
@@ -2329,30 +2431,18 @@ const Viewer = {
   prev() { if (this.i > 0) { this.i--; this.show(); } else this.show(); }
 };
 function bindViewer() {
-  const stage = $('#vw-stage'); let down = null, holdT = 0;
+  const stage = $('#vw-stage');
   stage.insertAdjacentHTML('beforeend', `<div class="burst" id="vw-burst" aria-hidden="true">${ICON.heartFill}</div>`);
   document.addEventListener('animationend', e => { if (e.target.classList && e.target.classList.contains('burst')) e.target.classList.remove('go'); }, true);
   document.addEventListener('focusin', e => { if (e.target && e.target.id === 'vw-reply-in') Viewer.paused = true; });
   document.addEventListener('focusout', e => { if (e.target && e.target.id === 'vw-reply-in' && !S.sheet) Viewer.paused = false; });
-  stage.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; clearTimeout(holdT); holdT = setTimeout(() => { Viewer.paused = true; }, 220); });
-  stage.addEventListener('pointerup', e => {
-    clearTimeout(holdT);
-    const wasPaused = Viewer.paused; Viewer.paused = false;
-    if (!down) return;
-    const dx = e.clientX - down.x, dy = e.clientY - down.y, dt = Date.now() - down.t; down = null;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { if (dx < 0) Viewer.next(); else Viewer.prev(); return; }
-    if (dy > 90 && Math.abs(dy) > Math.abs(dx)) { Viewer.close(); return; }
-    if (wasPaused && dt > 300) return;
-    const r = stage.getBoundingClientRect();
-    if (e.clientX - r.left > r.width / 3) Viewer.next(); else Viewer.prev();
-  });
-  stage.addEventListener('pointercancel', () => { clearTimeout(holdT); Viewer.paused = false; down = null; });
+  bindViewerGestures();
   document.addEventListener('keydown', e => {
     if (!Viewer.isOpen() || !$('#overlay').hidden) return;
     if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) { if (e.key === 'Escape') e.target.blur(); return; }
     if (e.key === 'ArrowRight') { e.preventDefault(); Viewer.next(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); Viewer.prev(); }
-    else if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); Viewer.close(); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); Viewer.closeAnim(); }
   }, true);
 }
 function openStories(uid) {
@@ -2439,7 +2529,8 @@ async function createStories() {
       st.textContent = `스토리 올리는 중… ${i + 1}/${picked.length}`;
       const c = await photoBlob(picked[i], 1440);
       const up = await uploadAsset(c.blob, 'image/jpeg');
-      const ok = await write(() => S.db.collection('stories').add({ author: S.myId, image: { id: up.id, w: c.w, h: c.h }, createdAt: base + i }));
+      const men = edDirty(picked[i]) ? [...new Set((picked[i].edit.items || []).filter(x => x.mention).map(x => x.mention))] : [];
+      const ok = await write(() => S.db.collection('stories').add(Object.assign({ author: S.myId, image: { id: up.id, w: c.w, h: c.h }, createdAt: base + i }, men.length ? { mentions: men } : {})));
       if (!ok) { dropAsset(up.id); throw { code: '_handled' }; }
       done.push(up.id);
     }
@@ -2913,6 +3004,7 @@ const Ed = {
   stickers() {
     const t = todayKey(), [y, m, d] = t.split('-'), n = ddayN(t), now = new Date(), hh = now.getHours();
     const out = [];
+    for (const p of partners()) if (p.nickname) out.push({ kind: 'pill', text: '@' + p.nickname, mention: p.uid });
     if (n) out.push({ kind: 'pill', text: `우리 ${n}일째 ♥` });
     out.push({ kind: 'pill', text: `${y}.${m}.${d}` }, { kind: 'pill', text: `${Number(m)}월 ${Number(d)}일 ${WD[weekdayOf(t)]}요일` },
       { kind: 'pill', text: `${hh < 12 ? '오전' : '오후'} ${hh % 12 || 12}:${String(now.getMinutes()).padStart(2, '0')}` }, { kind: 'pill', text: '사랑해 ♥' }, { kind: 'ours', text: 'ours' });
@@ -2927,7 +3019,7 @@ const Ed = {
   },
   addSticker(spec) {
     const st = this.st; if (!st) return;
-    this.change(() => st.items.push({ id: edRid(), type: 'sticker', kind: spec.kind, text: spec.text, style: 0, x: st.FW * (.5 + (Math.random() - .5) * .16), y: st.FH * (.45 + (Math.random() - .5) * .1), s: 1, rot: 0 }));
+    this.change(() => st.items.push({ id: edRid(), type: 'sticker', kind: spec.kind, text: spec.text, style: 0, ...(spec.mention ? { mention: spec.mention } : {}), x: st.FW * (.5 + (Math.random() - .5) * .16), y: st.FH * (.45 + (Math.random() - .5) * .1), s: 1, rot: 0 }));
     $('#ed-stk').hidden = true; this.req(); edLoadFonts(st.items).then(() => this.req());
   },
   /* fingers */
@@ -3096,13 +3188,15 @@ async function toggleStoryLike(sid) {
   S._slBusy = true;
   const ok = await write(() => on ? S.db.doc('storylikes/' + k).delete() : S.db.doc('storylikes/' + k).set({ storyId: sid, uid: S.myId, author: st ? st.author : '', createdAt: Date.now() }));
   S._slBusy = false;
+  if (!on) Haptic.tap();
   if (ok && !on) { const b = $('#vw-burst'); if (b) { b.classList.remove('go'); void b.offsetWidth; b.classList.add('go'); } }
 }
 async function sendStoryReply() {
   const it = Viewer.current(), inp = $('#vw-reply-in'), text = ((inp && inp.value) || '').trim();
   if (!it || it.kind !== 'story' || !text || !guardWrite()) return;
   inp.disabled = true;
-  const ok = await write(() => S.db.collection('comments').add({ storyId: it.ref, storyAuthor: it.author, uid: S.myId, text, createdAt: Date.now() }));
+  const men = findMentions(text);
+  const ok = await write(() => S.db.collection('comments').add(Object.assign({ storyId: it.ref, storyAuthor: it.author, uid: S.myId, text, createdAt: Date.now() }, men.length ? { mentions: men } : {})));
   inp.disabled = false;
   if (ok) { inp.value = ''; inp.blur(); Viewer.paused = false; toast('답장을 보냈어요'); }
 }
@@ -3175,7 +3269,7 @@ function commentRows(list) {
   const ids = new Set(list.map(c => c.id));
   const tops = list.filter(c => !c.parentId || !ids.has(c.parentId));
   const kids = {}; for (const c of list) if (c.parentId && ids.has(c.parentId)) (kids[c.parentId] = kids[c.parentId] || []).push(c);
-  const row = (c, top, reply) => `<div class="c-item${reply ? ' reply' : ''}" id="c-${esc(c.id)}">${avatar(c.uid, reply ? 26 : 32)}<div><p><b>${esc(nameOf(c.uid))}</b>${reply && c.replyTo && c.replyTo !== c.uid ? `<span class="at">@${esc(nameOf(c.replyTo))}</span> ` : ''}<span class="${hw(c.uid)}">${esc(c.text)}</span></p><div class="c-meta"><span>${timeAgo(c.createdAt)}</span>${S.mode === 'live' && S.canWrite ? `<button type="button" data-act="reply" data-id="${esc(top.id)}" data-uid="${esc(c.uid)}">답글 달기</button>` : ''}${c.uid === S.myId ? `<button type="button" data-act="del-comment" data-id="${esc(c.id)}">삭제</button>` : ''}</div></div></div>`;
+  const row = (c, top, reply) => `<div class="c-item${reply ? ' reply' : ''}" id="c-${esc(c.id)}">${avatar(c.uid, reply ? 26 : 32)}<div><p><b>${esc(nameOf(c.uid))}</b>${reply && c.replyTo && c.replyTo !== c.uid ? `<span class="at">@${esc(nameOf(c.replyTo))}</span> ` : ''}<span class="${hw(c.uid)}">${rich(c.text)}</span></p><div class="c-meta"><span>${timeAgo(c.createdAt)}</span>${S.mode === 'live' && S.canWrite ? `<button type="button" data-act="reply" data-id="${esc(top.id)}" data-uid="${esc(c.uid)}">답글 달기</button>` : ''}${c.uid === S.myId ? `<button type="button" data-act="del-comment" data-id="${esc(c.id)}">삭제</button>` : ''}</div></div></div>`;
   return tops.map(c => row(c, c, false) + (kids[c.id] || []).map(r => row(r, c, true)).join('')).join('');
 }
 function setReply(topId, uid) {
@@ -3277,8 +3371,270 @@ async function savePostEdit(form) {
   const caption = $('#pe-cap').value.trim();
   const images = (p.images || []).map((im, i) => { const inp = form.querySelector(`[data-pe="${i}"]`); const c = inp ? inp.value.trim() : (im.caption || ''); const o = Object.assign({}, im); if (c) o.caption = c; else delete o.caption; return o; });
   const data = Object.assign({}, p, { caption, images, editedAt: Date.now() }); delete data.id;
+  const men = findMentions(caption, ...images.map(im => im.caption)); if (men.length) data.mentions = men; else delete data.mentions;
   const ok = await write(() => S.db.doc('posts/' + p.id).set(data));
   if (ok) { if (S.sheet && S.sheet.from === 'posts') openSheet('posts'); else closeSheet(true); toast('게시물을 고쳤어요'); }
+}
+
+/* ---------- feel: haptics, springy gestures, screen transitions ---------- */
+const Haptic = {
+  el: null,
+  tap() {
+    try {
+      if (navigator.vibrate) { navigator.vibrate(8); return; }
+      // iPhone (iOS 18+): tapping a switch control gives a light tick
+      if (!this.el) {
+        const l = document.createElement('label'); l.setAttribute('aria-hidden', 'true');
+        l.style.cssText = 'position:fixed;left:-200px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
+        const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1;
+        l.appendChild(i); document.body.appendChild(l); this.el = l;
+      }
+      this.el.click();
+    } catch (e) { /* no haptics on this device */ }
+  }
+};
+const SPRING = 'cubic-bezier(.2,1.25,.35,1)';
+const EASE_OUT = 'cubic-bezier(.22,.8,.3,1)';
+const EASE_IN = 'cubic-bezier(.45,0,.75,.4)';
+const reduceMotion = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const rubber = (d, k = 0.55, lim = 120) => lim * (1 - Math.exp(-Math.max(0, d) * k / lim));
+
+/* full-screen viewer: drag down to close, drag sideways to change, springs back if you let go early */
+function bindViewerGestures() {
+  const stage = $('#vw-stage'), card = $('#vw-card'), bg = $('#vw-bg');
+  let g = null, holdT = 0;
+  const setDrag = (x, y, s, r, a) => { card.style.transform = `translate3d(${x}px,${y}px,0) scale(${s})`; card.style.borderRadius = r + 'px'; bg.style.opacity = a; };
+  const springBack = () => {
+    card.style.transition = `transform .5s ${SPRING}, border-radius .4s ${EASE_OUT}`; bg.style.transition = `opacity .35s ${EASE_OUT}`;
+    card.style.transform = ''; card.style.borderRadius = ''; bg.style.opacity = '';
+    Viewer.paused = false;
+  };
+  stage.addEventListener('pointerdown', e => {
+    if (g || Viewer.closing) return;
+    try { stage.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ }
+    const now = performance.now();
+    g = { id: e.pointerId, x: e.clientX, y: e.clientY, t: now, lx: e.clientX, ly: e.clientY, lt: now, vx: 0, vy: 0, mode: null };
+    card.style.transition = 'none'; bg.style.transition = 'none';
+    clearTimeout(holdT); holdT = setTimeout(() => { Viewer.paused = true; if (g) g.held = true; }, 220);
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!g || e.pointerId !== g.id) return;
+    const now = performance.now(), dt = Math.max(1, now - g.lt);
+    g.vx = g.vx * 0.4 + 0.6 * (e.clientX - g.lx) / dt; g.vy = g.vy * 0.4 + 0.6 * (e.clientY - g.ly) / dt; g.lx = e.clientX; g.ly = e.clientY; g.lt = now;
+    const dx = e.clientX - g.x, dy = e.clientY - g.y;
+    if (!g.mode) {
+      if (dy > 10 && dy > Math.abs(dx)) g.mode = 'down';
+      else if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) g.mode = 'side';
+      if (g.mode) { clearTimeout(holdT); Viewer.paused = true; }
+    }
+    if (g.mode === 'down') {
+      const p = Math.min(1, Math.max(0, dy) / Math.max(1, innerHeight));
+      setDrag(dx * 0.5, Math.max(0, dy), 1 - p * 0.32, Math.min(30, Math.max(0, dy) / 5), Math.max(0.12, 1 - p * 1.7));
+    } else if (g.mode === 'side') {
+      const last = Viewer.i >= Viewer.items.length - 1, first = Viewer.i === 0;
+      const d = (dx > 0 && first) ? rubber(dx, 0.5, 90) : (dx < 0 && last && !Viewer.auto) ? -rubber(-dx, 0.5, 90) : dx;
+      setDrag(d, 0, 1 - Math.min(0.06, Math.abs(d) / innerWidth * 0.12), Math.min(24, Math.abs(d) / 8), 1);
+    }
+  });
+  const end = e => {
+    if (!g || e.pointerId !== g.id) return;
+    clearTimeout(holdT);
+    const G = g; g = null;
+    const dx = e.clientX - G.x, dy = e.clientY - G.y, dt = performance.now() - G.t;
+    if (performance.now() - G.lt > 90) { G.vx = 0; G.vy = 0; } // finger stopped before letting go
+    if (G.mode === 'down') {
+      if (e.type !== 'pointercancel' && (dy > 120 || (G.vy > 0.55 && dy > 30))) { Haptic.tap(); Viewer.dismiss(dx * 0.5, dy, G.vy); }
+      else springBack();
+      return;
+    }
+    if (G.mode === 'side') {
+      const dir = dx < 0 ? 1 : -1, can = dir > 0 ? (Viewer.i < Viewer.items.length - 1 || Viewer.auto) : Viewer.i > 0;
+      if (e.type !== 'pointercancel' && can && (Math.abs(dx) > innerWidth * 0.22 || Math.abs(G.vx) > 0.45)) { Haptic.tap(); Viewer.slide(dir, dx); }
+      else springBack();
+      return;
+    }
+    card.style.transform = ''; bg.style.opacity = '';
+    Viewer.paused = false;
+    if (e.type === 'pointercancel' || (G.held && dt > 300)) return;
+    const r = stage.getBoundingClientRect();
+    if (e.clientX - r.left > r.width / 3) Viewer.next(); else Viewer.prev();
+  };
+  stage.addEventListener('pointerup', end);
+  stage.addEventListener('pointercancel', end);
+}
+
+/* bottom sheets: drag the handle (or the list when it is scrolled to the top) down to close */
+function bindSheetDrag() {
+  const ov = $('#overlay');
+  let d = null;
+  const sheetEl = () => $('.sheet', ov);
+  const begin = (y, x) => { const sh = sheetEl(); if (!sh || !S.sheet) return; d = { y0: y, x0: x, y, t: performance.now(), v: 0, sh, on: false }; };
+  const move = (y, x, ev) => {
+    if (!d) return;
+    const dy = y - d.y0, dx = x - d.x0, now = performance.now();
+    d.v = d.v * 0.4 + 0.6 * (y - d.y) / Math.max(1, now - d.t); d.y = y; d.t = now;
+    if (!d.on) {
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) { d = null; return; }
+      if (dy < -4) { d = null; return; }
+      if (dy < 7) return;
+      d.on = true; d.sh.style.transition = 'none'; ov.style.transition = 'none';
+      if (document.activeElement && d.sh.contains(document.activeElement)) document.activeElement.blur();
+    }
+    if (ev && ev.cancelable) ev.preventDefault();
+    const h = d.sh.offsetHeight || 600, ty = dy > 0 ? dy : -rubber(-dy, 0.4, 30);
+    d.sh.style.transform = `translate3d(0,${ty}px,0)`;
+    ov.style.backgroundColor = `rgba(0,0,0,${(0.42 * Math.max(0, 1 - dy / h)).toFixed(3)})`;
+  };
+  const finish = cancel => {
+    if (!d) return;
+    const D = d; d = null; if (!D.on) return;
+    const dy = D.y - D.y0; if (performance.now() - D.t > 90) D.v = 0;
+    if (!cancel && (dy > Math.min(150, (D.sh.offsetHeight || 600) * 0.28) || (D.v > 0.5 && dy > 24)) && !(S.sheet && S.sheet.type === 'onboard' && !profileOf(S.myId))) { Haptic.tap(); closeSheet(false, true); }
+    else { D.sh.style.transition = `transform .5s ${SPRING}`; D.sh.style.transform = ''; ov.style.transition = `background-color .3s ${EASE_OUT}`; ov.style.backgroundColor = ''; }
+  };
+  const grabbable = t => t.closest('.sh-grab, .sh-head') && !t.closest('button, a, input, textarea, select');
+  // touch (phones): handle anywhere, list only when it is at the top
+  ov.addEventListener('touchstart', e => {
+    if (e.touches.length > 1) { d = null; return; }
+    const t = e.target, sh = sheetEl(); if (!sh || !sh.contains(t) || t.closest('input, textarea, select, .ed-row, .ed-filters, .picked, .strip, .fontpick')) return;
+    const body = t.closest('.sh-body'); if (body && body.scrollTop > 0) return;
+    begin(e.touches[0].clientY, e.touches[0].clientX);
+  }, { passive: true });
+  ov.addEventListener('touchmove', e => { if (d) move(e.touches[0].clientY, e.touches[0].clientX, e); }, { passive: false });
+  ov.addEventListener('touchend', () => finish(false));
+  ov.addEventListener('touchcancel', () => finish(true));
+  // mouse / pen: the handle and title bar
+  ov.addEventListener('pointerdown', e => { if (e.pointerType === 'touch' || !grabbable(e.target)) return; begin(e.clientY, e.clientX); });
+  window.addEventListener('pointermove', e => { if (d && e.pointerType !== 'touch') move(e.clientY, e.clientX, e); });
+  window.addEventListener('pointerup', e => { if (d && e.pointerType !== 'touch') finish(false); });
+}
+
+/* screens: pushed pages slide in from the right; swipe from the left edge to go back */
+const PUSHED = { settings: 'profile', letters: 'home', calendar: 'home' };
+function animateView(prev) {
+  if (!prev || prev === S.view || reduceMotion()) return;
+  const el = $('#v-' + S.view); if (!el) return;
+  const cls = PUSHED[S.view] && PUSHED[S.view] === prev ? 'v-push' : PUSHED[prev] && PUSHED[prev] === S.view ? 'v-pop' : 'v-fade';
+  el.classList.remove('v-push', 'v-pop', 'v-fade'); void el.offsetWidth; el.classList.add(cls);
+  clearTimeout(el._vt); el._vt = setTimeout(() => el.classList.remove(cls), 520);
+}
+function bindEdgeBack() {
+  if (Push.isIOS() && !Push.standalone()) return; // Safari already has its own swipe-back
+  let es = null;
+  document.addEventListener('touchstart', e => {
+    if (!PUSHED[S.view] || S.sheet || Viewer.isOpen() || Ed.isOpen() || e.touches.length > 1) return;
+    const t = e.touches[0]; if (t.clientX > 26) return;
+    es = { x0: t.clientX, y0: t.clientY, dx: 0, on: false, el: $('#v-' + S.view), t: performance.now() };
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (!es) return;
+    const t = e.touches[0], dx = t.clientX - es.x0, dy = t.clientY - es.y0;
+    if (!es.on) { if (dx > 10 && dx > Math.abs(dy) * 1.2) { es.on = true; es.el.style.transition = 'none'; es.el.classList.add('v-drag'); try { getSelection().removeAllRanges(); } catch (err) { /* ignore */ } } else if (Math.abs(dy) > 10 || dx < -4) { es = null; return; } else return; }
+    if (e.cancelable) e.preventDefault();
+    es.dx = Math.max(0, dx); es.el.style.transform = `translate3d(${es.dx}px,0,0)`;
+  }, { passive: false });
+  const done = () => {
+    if (!es) return;
+    const E = es; es = null; if (!E.on) return;
+    const v = E.dx / Math.max(1, performance.now() - E.t);
+    if (E.dx > innerWidth * 0.32 || (v > 0.6 && E.dx > 40)) {
+      Haptic.tap();
+      E.el.style.transition = `transform .22s ${EASE_OUT}`; E.el.style.transform = `translate3d(${innerWidth}px,0,0)`;
+      setTimeout(() => { E.el.style.transition = ''; E.el.style.transform = ''; E.el.classList.remove('v-drag'); go(PUSHED[S.view] || 'home'); }, 200);
+    } else {
+      E.el.style.transition = `transform .45s ${SPRING}`; E.el.style.transform = '';
+      setTimeout(() => { E.el.style.transition = ''; E.el.classList.remove('v-drag'); }, 460);
+    }
+  };
+  document.addEventListener('touchend', done); document.addEventListener('touchcancel', done);
+}
+
+/* home: pull down at the top to refresh, with a stretchy heart */
+function bindPullRefresh() {
+  const home = $('#v-home'), ptr = $('#ptr');
+  let pr = null, busy = false;
+  const blocked = () => S.view !== 'home' || S.sheet || Viewer.isOpen() || Ed.isOpen() || !$('#login').hidden;
+  document.addEventListener('touchstart', e => {
+    if (busy || blocked() || window.scrollY > 0 || e.touches.length > 1) return;
+    if (e.target.closest('.stories, .carousel, input, textarea')) return;
+    pr = { y0: e.touches[0].clientY, x0: e.touches[0].clientX, on: false, pull: 0 };
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (!pr) return;
+    const t = e.touches[0], dy = t.clientY - pr.y0, dx = t.clientX - pr.x0;
+    if (!pr.on) { if (dy > 8 && dy > Math.abs(dx) && window.scrollY <= 0) { pr.on = true; home.style.transition = 'none'; ptr.style.transition = 'none'; } else if (dy < 0 || Math.abs(dx) > 10) { pr = null; return; } else return; }
+    if (e.cancelable) e.preventDefault();
+    pr.pull = rubber(dy, 0.6, 130);
+    home.style.transform = `translate3d(0,${pr.pull}px,0)`;
+    const p = Math.min(1, pr.pull / 72);
+    ptr.style.opacity = p; ptr.style.transform = `translate3d(-50%,${pr.pull * 0.5 - 30}px,0) scale(${0.5 + p * 0.5}) rotate(${p * 200}deg)`;
+    ptr.classList.toggle('ready', pr.pull >= 72);
+  }, { passive: false });
+  const settle = () => {
+    home.style.transition = `transform .5s ${SPRING}`; home.style.transform = '';
+    ptr.style.transition = `transform .35s ${EASE_OUT}, opacity .25s`; ptr.style.opacity = 0; ptr.style.transform = 'translate3d(-50%,-30px,0) scale(.5)';
+    ptr.classList.remove('ready', 'spin');
+  };
+  const done = async () => {
+    if (!pr) return;
+    const P = pr; pr = null; if (!P.on) return;
+    if (P.pull < 72) { settle(); return; }
+    Haptic.tap(); busy = true;
+    home.style.transition = `transform .35s ${SPRING}`; home.style.transform = 'translate3d(0,56px,0)';
+    ptr.style.transition = `transform .35s ${SPRING}`; ptr.style.transform = 'translate3d(-50%,0,0) scale(1)'; ptr.style.opacity = 1; ptr.classList.add('spin');
+    const B = window.OursBackend, cols = ['posts', 'stories', 'comments', 'likes', 'reposts', 'storyviews', 'storylikes', 'answers', 'drawings'];
+    try { await Promise.all([sleep(650), B && B.refresh && S.mode === 'live' ? Promise.all(cols.map(c => B.refresh(c))) : null]); } catch (e) { /* the realtime feed keeps going anyway */ }
+    render(); settle(); busy = false;
+  };
+  document.addEventListener('touchend', done); document.addEventListener('touchcancel', done);
+}
+
+/* ---------- mentions (@이름) ---------- */
+function mentionPeople() { return S.profiles.filter(p => p && p.uid && p.nickname).sort((a, b) => (a.uid === S.myId) - (b.uid === S.myId)); }
+function findMentions(...texts) {
+  const t = texts.filter(Boolean).join('\n'); if (!t.includes('@')) return [];
+  return mentionPeople().filter(p => t.includes('@' + p.nickname)).map(p => p.uid);
+}
+function rich(text) {
+  let h = esc(text); if (!String(text || '').includes('@')) return h;
+  const ps = mentionPeople().slice().sort((a, b) => b.nickname.length - a.nickname.length);
+  for (const p of ps) {
+    const n = '@' + esc(p.nickname);
+    h = h.split(n).join(`\u0000${p.uid}\u0001`);
+  }
+  return h.replace(/\u0000([^\u0001]*)\u0001/g, (_, uid) => `<button type="button" class="mention" data-act="profile" data-uid="${esc(uid)}">@${esc(nameOf(uid))}</button>`);
+}
+const MENTION_INPUTS = '#cap-in, #cmt-in, #pe-cap, [data-pcap], [data-pe], #vw-reply-in, #rp-note';
+function mentionToken(el) {
+  const v = el.value || '', c = el.selectionStart == null ? v.length : el.selectionStart;
+  const m = /(^|[\s(])@([^\s@]{0,20})$/.exec(v.slice(0, c));
+  return m ? { q: m[2], start: c - m[2].length - 1, end: c } : null;
+}
+function mentionPop(el) {
+  const pop = $('#mention-pop'), tk = el && mentionToken(el);
+  const people = tk ? mentionPeople().filter(p => p.uid !== S.myId || mentionPeople().length === 1).filter(p => p.nickname.startsWith(tk.q) || !tk.q) : [];
+  if (!tk || !people.length) { pop.hidden = true; pop._el = null; return; }
+  pop._el = el; pop._tk = tk;
+  patch(pop, people.map(p => `<button type="button" data-uid="${esc(p.uid)}">${avatar(p.uid, 26)}<b>@${esc(p.nickname)}</b></button>`).join(''));
+  pop.hidden = false;
+  const r = el.getBoundingClientRect(), ph = pop.offsetHeight || 44;
+  const top = r.top - ph - 8 > 8 ? r.top - ph - 8 : r.bottom + 8;
+  pop.style.left = Math.max(8, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + 'px'; pop.style.top = top + 'px';
+}
+function bindMentions() {
+  const pop = $('#mention-pop');
+  document.addEventListener('input', e => { if (e.target.matches && e.target.matches(MENTION_INPUTS)) mentionPop(e.target); });
+  document.addEventListener('focusout', e => { if (e.target.matches && e.target.matches(MENTION_INPUTS)) setTimeout(() => { if (!pop.contains(document.activeElement)) pop.hidden = true; }, 150); });
+  pop.addEventListener('pointerdown', e => e.preventDefault());
+  pop.addEventListener('click', e => {
+    const b = e.target.closest('button[data-uid]'), el = pop._el, tk = pop._tk; if (!b || !el || !tk) return;
+    e.stopPropagation();
+    const ins = '@' + nameOf(b.dataset.uid) + ' ', v = el.value;
+    el.value = v.slice(0, tk.start) + ins + v.slice(tk.end);
+    const c = tk.start + ins.length; el.focus(); try { el.setSelectionRange(c, c); } catch (err) { /* ignore */ }
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    pop.hidden = true; Haptic.tap();
+  });
 }
 
 /* ---------- push notifications ---------- */
@@ -3379,7 +3735,7 @@ function showView() { VIEWS.forEach(v => { $('#v-' + v).hidden = v !== S.view; }
 function fromHash() {
   const h = location.hash.replace('#', ''); const v = VIEWS.includes(h) ? h : 'home';
   if (v !== S.view) {
-    scrollPos[S.view] = window.scrollY; S.view = v; showView(); doRender();
+    scrollPos[S.view] = window.scrollY; const prevV = S.view; S.view = v; showView(); animateView(prevV); doRender();
     window.scrollTo(0, scrollPos[v] || 0);
   } else { showView(); render(); }
 }
@@ -3410,8 +3766,9 @@ function bind() {
       case 'open-post': openSheet('post', { postId: id }); break;
       case 'del-comment': deleteComment(id); break;
       case 'activity': openSheet('activity'); break;
-      case 'close': closeSheet(); break;
+      case 'close': closeSheet(false, true); break;
       case 'profile': {
+        if (Viewer.isOpen()) Viewer.close();
         const u = t.dataset.uid || S.myId; S.profileUid = u === S.myId ? null : u; S.profileTab = 'posts';
         if (S.sheet) closeSheet(true);
         scrollPos.profile = 0; if (S.view === 'profile') { render(); window.scrollTo(0, 0); } else go('profile');
@@ -3472,7 +3829,7 @@ function bind() {
       }
       case 'view-day': Viewer.open(IDX.photoDays[t.dataset.date] || [], Number(t.dataset.i) || 0, {}); break;
       case 'view-hl': { const hl = S.highlights.find(x => x.id === id); if (hl) { const items = hlItems(hl); if (items.length) Viewer.open(items, 0, { auto: true, title: hl.title, hl }); else toast('이 하이라이트에 남은 사진이 없어요'); } break; }
-      case 'vw-close': Viewer.close(); break;
+      case 'vw-close': Viewer.closeAnim(); break;
       case 'vw-del-story': { const it = Viewer.current(); if (it) deleteStory(it.ref); break; }
       case 'vw-open-post': { const it = Viewer.current(); if (it) { Viewer.close(); openSheet('post', { postId: it.ref }); } break; }
       case 'vw-drawing': { const it = Viewer.current(); if (it) { Viewer.close(); S.dDate = it.date; S.dRedraw = false; go('drawing'); } break; }
@@ -3539,7 +3896,8 @@ function bind() {
         const k = t.dataset.kind;
         if (k === 'storylike') { closeSheet(true); if (!openArchive(S.myId, t.dataset.sid)) toast('지워진 스토리예요'); break; }
         if (k === 'storycomment' || (k === 'reply' && t.dataset.sid)) { openSheet('comments', { storyId: t.dataset.sid }); break; }
-        if (k === 'reply') { openSheet('comments', { postId: id }); break; }
+        if (k === 'reply' || k === 'mention') { if (t.dataset.sid) openSheet('comments', { storyId: t.dataset.sid }); else openSheet('comments', { postId: id }); break; }
+        if (k === 'mentionstory') { closeSheet(true); const sx = storyById(t.dataset.sid); if (sx) { const items = (Date.now() - (sx.createdAt || 0) < DAY_MS ? activeStories(sx.author) : [sx]).map(storyItem); Viewer.open(items, Math.max(0, items.findIndex(y => y.ref === sx.id)), { auto: true }); } else toast('지워진 스토리예요'); break; }
         if (k === 'answer') { closeSheet(true); S.qDate = t.dataset.date; go('question'); }
         else if (k === 'drawing') { closeSheet(true); S.dDate = t.dataset.date; S.dRedraw = false; go('drawing'); }
         else if (k === 'story') { closeSheet(true); if (!openStories(t.dataset.uid)) { S.profileUid = t.dataset.uid; go('profile'); } }
@@ -3575,16 +3933,16 @@ function bind() {
       catch (err) { toast(assetErrMsg(err)); }
     }
   });
-  $('#overlay').addEventListener('click', e => { if (e.target.id === 'overlay') closeSheet(); });
+  $('#overlay').addEventListener('click', e => { if (e.target.id === 'overlay') closeSheet(false, true); });
   document.addEventListener('input', e => { const i = e.target.dataset ? e.target.dataset.pcap : null; if (i != null && picked[Number(i)]) picked[Number(i)].cap = e.target.value; });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#confirm').hidden || Viewer.isOpen() || Ed.isOpen()) return; closeSheet(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#confirm').hidden || Viewer.isOpen() || Ed.isOpen()) return; closeSheet(false, true); } });
   document.addEventListener('scroll', e => {
     const c = e.target; if (!(c instanceof Element) || !c.classList.contains('carousel')) return;
     const i = Math.round(c.scrollLeft / Math.max(1, c.clientWidth)); const m = c.parentElement;
     const dots = m.querySelectorAll('.dots i'); dots.forEach((d, j) => d.classList.toggle('on', j === i));
     const b = m.querySelector('.badge'); if (b) b.textContent = (i + 1) + '/' + dots.length;
     const pc = m.nextElementSibling;
-    if (pc && pc.classList.contains('pcap')) { const sl = c.children[i], tx = (sl && sl.dataset.cap) || ''; pc.querySelector('.pc-t').textContent = tx; pc.querySelector('.pc-n').textContent = (i + 1) + '/' + dots.length; pc.classList.toggle('empty', !tx); }
+    if (pc && pc.classList.contains('pcap')) { const sl = c.children[i], tx = (sl && sl.dataset.cap) || ''; pc.querySelector('.pc-t').innerHTML = rich(tx); pc.querySelector('.pc-n').textContent = (i + 1) + '/' + dots.length; pc.classList.toggle('empty', !tx); }
   }, true);
   document.addEventListener('error', e => {
     const t = e.target; if (!t || t.tagName !== 'IMG') return;
@@ -3660,7 +4018,7 @@ function askLogin() {
 async function boot() {
   applyTheme();
   S.qDate = todayKey(); S.dDate = todayKey(); S._today = todayKey();
-  Draw.init(); bind(); bindViewer();
+  Draw.init(); bind(); bindViewer(); bindSheetDrag(); bindEdgeBack(); bindPullRefresh(); bindMentions();
   const h = location.hash.replace('#', ''); S.view = VIEWS.includes(h) ? h : 'home'; showView();
   renderPicked(); doRender();
   const B = window.OursBackend;

@@ -133,13 +133,14 @@ function changeMessages(p) {
   const actor = d.author || d.uid; const name = nick(map, actor); const j = ga(name);
   const others = Object.keys(map).filter(u => u !== actor);
   const to = list => list.filter(Boolean);
+  const men = Array.isArray(d.mentions) ? d.mentions : [];
   switch (col) {
-    case 'posts': return others.map(u => ({ to: u, cat: 'post', title: 'ours', body: `${name}${j} 새 사진을 올렸어요${d.caption ? ' · ' + clip(d.caption, 40) : ''}`, url: './#home', tag: 'post-' + actor }));
-    case 'stories': return others.map(u => ({ to: u, cat: 'post', title: 'ours', body: `${name}${j} 스토리를 올렸어요`, url: './#home', tag: 'story-' + actor }));
+    case 'posts': return others.map(u => ({ to: u, cat: 'post', title: 'ours', body: men.includes(u) ? `${name}${j} 게시물에서 나를 언급했어요${d.caption ? ' · ' + clip(d.caption, 40) : ''}` : `${name}${j} 새 사진을 올렸어요${d.caption ? ' · ' + clip(d.caption, 40) : ''}`, url: './#home', tag: 'post-' + actor }));
+    case 'stories': return others.map(u => ({ to: u, cat: 'post', title: 'ours', body: men.includes(u) ? `${name}${j} 스토리에서 나를 언급했어요` : `${name}${j} 스토리를 올렸어요`, url: './#home', tag: 'story-' + actor }));
     case 'comments': {
       const title = d.storyId ? (d.parentId ? '스토리 답장에 답글' : '스토리 답장') : d.parentId ? '새 답글' : '새 댓글';
       const who = d.storyId && !d.parentId && d.storyAuthor ? [d.storyAuthor] : d.parentId && d.replyTo ? [d.replyTo] : others;
-      return to(who).filter(u => u !== actor).map(u => ({ to: u, cat: 'comment', title, body: `${name}: ${clip(d.text, 60)}`, url: './#home', tag: 'comment-' + (d.postId || d.storyId || '') }));
+      return [...new Set(to([...who, ...men]))].filter(u => u !== actor).map(u => ({ to: u, cat: 'comment', title: men.includes(u) ? '나를 언급했어요' : title, body: `${name}: ${clip(d.text, 60)}`, url: './#home', tag: 'comment-' + (d.postId || d.storyId || '') }));
     }
     case 'likes': case 'storylikes': {
       // here d.author is the owner of the photo; the person who tapped the heart is d.uid
