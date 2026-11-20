@@ -225,7 +225,7 @@ async function handler(req) {
   try { signKey = await importVapid(p.vapidPrivate, VAPID_PUBLIC); }
   catch (_) { return new Response('forbidden', { status: 403 }); }
   const map = people(p);
-  const msgs = p.type === 'tick' ? tickMessages(p, Date.now()) : p.type === 'petgrow' ? petgrowMessages(p) : changeMessages(p);
+  const msgs = p.type === 'tick' ? tickMessages(p, Date.now()) : p.type === 'petgrow' ? petgrowMessages(p) : (p.data && p.data.src === 'someone') ? [] : changeMessages(p); // 썸원에서 가져온 기록은 알림 없음
   const fresh = Date.now() - 120 * 86400000;
   const subs = (p.subs || []).filter(s => s && s.uid && s.endpoint && s.keys && s.keys.p256dh && s.keys.auth && (s.updatedAt || 0) > fresh);
   const jobs = [];
