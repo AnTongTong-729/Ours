@@ -157,6 +157,7 @@ b,strong,.btn,.link,.pill,.chip,.eyebrow,.sec-title,.view-title,.who,.prof-name,
 .tstyle b{font-family:var(--font-cute);font-weight:400;font-size:19px;line-height:1;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px}
 .tstyle.s1 b{background:#fff;color:#111}
 .tstyle.s2 b{border:2px solid #fff}
+.tstyle.s3 b{color:#fff;background:rgba(255,255,255,.28);text-shadow:-1.5px -1.5px 0 #000,1.5px -1.5px 0 #000,-1.5px 1.5px 0 #000,1.5px 1.5px 0 #000,0 0 2px #000}
 .ed-stk{position:absolute;inset:0;z-index:5;background:rgba(0,0,0,.5);display:flex;align-items:flex-end}
 .ed-stk-in{width:100%;max-height:74%;overflow-y:auto;background:linear-gradient(180deg,rgba(44,35,40,.98),rgba(18,14,16,.99));border-radius:22px 22px 0 0;padding:12px 14px calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid rgba(var(--fg),.14);box-shadow:var(--hi)}
 .ed-stk-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
@@ -979,9 +980,9 @@ input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):n
 .rp-play:disabled{opacity:.45}
 .rp-speed{min-width:46px;height:34px;border-radius:17px;background:rgba(var(--fg),.08);font-family:var(--font-cute);font-size:15px}
 /* update 8: story ring that pops, drawings replay side by side */
-.av.sring:not(.seen){background:conic-gradient(from 210deg,#ffd60a,#ff8a00,#ff2e63,#c13cff,#5b6cff,#22d3ee,#ffd60a);padding:3px;box-shadow:0 0 0 1px rgba(255,214,10,.25),0 0 16px rgba(255,138,0,.35)}
+.av.sring:not(.seen){background:linear-gradient(135deg,#ffffff 0%,#ffe1ee 50%,#ffffff 100%);padding:3px;box-shadow:0 0 12px rgba(255,79,154,.55)}
 .av.sring:not(.seen) .av-in{border-width:2.5px}
-:root[data-theme=light] .av.sring:not(.seen){box-shadow:0 0 12px rgba(255,138,0,.28)}
+:root[data-theme=light] .av.sring:not(.seen){background:linear-gradient(135deg,#1d1d1f 0%,#4a2a38 50%,#1d1d1f 100%);box-shadow:0 0 10px rgba(255,79,154,.35)}
 .dimg.has-rp{position:relative}
 .dimg .dcv{position:absolute;inset:0;width:100%;height:100%;background:#fff;opacity:0;transition:opacity .25s;pointer-events:none}
 .dimg.has-rp.playing .dcv{opacity:1}
@@ -995,6 +996,41 @@ input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):n
 .duo-bar{grid-column:1/-1}
 .ptr.ready{animation:ptrPop .32s cubic-bezier(.2,1.6,.35,1)}
 @keyframes ptrPop{0%{scale:1}45%{scale:1.32}100%{scale:1}}
+/* update 9: daily attendance */
+.att-card{display:flex;align-items:center;gap:12px;width:calc(100% - 32px);margin:8px 16px 2px;padding:12px 14px;border-radius:20px;background:var(--surface);border:.5px solid var(--line);text-align:left}
+.att-info{flex:1;min-width:0;display:grid;gap:7px}
+.att-info b{font-family:var(--font-cute);font-weight:400;font-size:15.5px}
+.att-info b small{font-size:12px;color:var(--pink);margin-left:4px}
+.att-row{display:flex;gap:5px}
+.att-st{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:rgba(var(--fg),.08);flex:none}
+.att-st i{font-style:normal;font-size:11px;line-height:1;display:grid;place-items:center}
+.att-st i svg{width:12px;height:12px;color:#fff}
+.att-st.done{background:var(--candy)}
+.att-st.now{box-shadow:0 0 0 2px var(--pink) inset}
+.att-btn{flex:none;padding:9px 14px;border-radius:999px;background:var(--candy);color:#fff;font-family:var(--font-cute);font-size:14.5px;box-shadow:0 6px 16px rgba(255,79,154,.3)}
+.att-btn b{font-weight:400}
+.att-done{flex:none;display:grid;justify-items:end;font-family:var(--font-cute);font-size:13.5px;color:var(--muted)}
+.att-done small{font-size:11.5px;color:var(--pink)}
+.att{display:grid;gap:14px;padding-bottom:6px}
+.att-head{margin:0;font-family:var(--font-cute);font-size:21px;text-align:center}
+.att-sub{margin:-6px 0 0;font-size:13px;line-height:1.55;text-align:center}
+.att-sub .coin,.att .btn .coin,.pet-wrap .muted .coin{width:15px;height:15px;vertical-align:-2px}
+.att{min-width:0}
+.att-row.big{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;min-width:0}
+.att-row.big .att-st{width:auto;height:auto;min-width:0;aspect-ratio:.72;border-radius:14px;display:grid;grid-template-rows:auto 1fr auto;justify-items:center;padding:6px 2px;gap:2px}
+.att-row.big .att-st small{font-size:11px;color:var(--muted);font-family:var(--font-cute)}
+.att-row.big .att-st.done small{color:rgba(255,255,255,.85)}
+.att-row.big .att-st i{font-size:20px;align-self:center}
+.att-row.big .att-st i svg{width:20px;height:20px}
+.att-row.big .att-st b{display:flex;align-items:center;gap:1px;font-family:var(--font-cute);font-weight:400;font-size:12px}
+.att-row.big .att-st b .coin{width:12px;height:12px}
+.att-row.big .att-st.gift{background:linear-gradient(160deg,rgba(255,210,94,.22),rgba(255,79,154,.16))}
+.att-row.big .att-st.gift.done{background:var(--candy)}
+.att-row.big .att-st.now{box-shadow:0 0 0 2px var(--pink) inset;animation:attNow 1.6s ease-in-out infinite}
+.att-st.pop{animation:attPop .55s cubic-bezier(.2,1.6,.35,1)}
+@keyframes attNow{50%{transform:translateY(-3px)}}
+@keyframes attPop{0%{transform:scale(.4) rotate(-14deg)}60%{transform:scale(1.18) rotate(4deg)}100%{transform:none}}
+.att-partner{display:flex;align-items:center;gap:8px;margin:0;font-size:13.5px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -1015,6 +1051,7 @@ input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):n
       <div class="stories" id="stories"></div>
       <div id="dday"></div>
       <div id="petcard"></div>
+      <div id="attcard"></div>
       <div id="feed-empty"></div>
       <div id="feed" class="feed"></div>
       <div id="feed-end"></div>
@@ -1322,7 +1359,7 @@ const S = {
   myId: null, myName: '', idFallback: false, isOwner: false,
   canWrite: true, canWriteKnown: false,
   profiles: [], posts: [], likes: [], comments: [], reposts: [], answers: [], drawings: [],
-  stories: [], storyviews: [], storylikes: [], petbuys: [], dayq: [], highlights: [], letters: [], letterbodies: [], plans: [], anniversaries: [], myquestions: [], settings: [], config: [],
+  stories: [], storyviews: [], storylikes: [], petbuys: [], dayq: [], attend: [], highlights: [], letters: [], letterbodies: [], plans: [], anniversaries: [], myquestions: [], settings: [], config: [],
   newMode: 'post', calMonth: null, calSel: null, ltTab: 'in',
   loaded: {}, slow: false, error: null, pp: {},
   view: 'home', profileUid: null, profileTab: 'posts',
@@ -1893,7 +1930,7 @@ async function createPost() {
     }
     st.textContent = '게시하는 중…';
     const caption = $('#cap-in').value.trim();
-    const men = findMentions(caption, ...images.map(im => im.caption));
+    const men = [...new Set([...findMentions(caption, ...images.map(im => im.caption)), ...picked.flatMap(q => edDirty(q) ? (q.edit.items || []).flatMap(x => x.mention ? [x.mention] : (x.mentions || [])) : [])])];
     const ok = await write(() => S.db.collection('posts').doc().set(Object.assign({ author: S.myId, images, caption, createdAt: Date.now() }, men.length ? { mentions: men } : {})));
     if (!ok) throw { code: '_handled' };
     picked.forEach(p => URL.revokeObjectURL(p.url)); picked.length = 0; renderPicked();
@@ -2110,6 +2147,7 @@ function openSheet(type, args = {}) {
   else if (type === 'archive') h = HEAD('스토리 보관함') + `<div class="sh-body" id="sh-list"></div>`;
   else if (type === 'posts') h = HEAD('게시글 관리') + `<div class="sh-body" id="sh-list"></div>`;
   else if (type === 'someone') h = HEAD('썸원 기록 가져오기') + `<div class="sh-body" id="sh-list"></div>`;
+  else if (type === 'attend') h = HEAD('출석 체크') + `<div class="sh-body" id="sh-list"></div>`;
   else if (type === 'replay') h = HEAD('그리는 과정') + `<div class="sh-body" id="sh-list"></div>`;
   else if (type === 'postedit') { const pe = IDX.posts[args.postId]; h = HEAD('게시물 고치기') + `<div class="sh-body">${pe ? postEditHTML(pe) : '<p class="empty sm">지워진 게시물이에요.</p>'}</div>`; }
   else if (type === 'post') h = HEAD('게시물') + `<div class="sh-body"><article class="card" id="sh-card"></article></div>`;
@@ -2198,6 +2236,7 @@ function renderSheet() {
   } else if (s.type === 'archive') { patch($('#sh-list'), archiveHTML());
   } else if (s.type === 'posts') { patch($('#sh-list'), managePostsHTML());
   } else if (s.type === 'someone') { if (patch($('#sh-list'), someoneHTML())) bindSomeone();
+  } else if (s.type === 'attend') { patch($('#sh-list'), attendSheetHTML());
   } else if (s.type === 'replay') { Replay.mount(s);
   } else if (s.type === 'editprofile') {
     const prev = $('#ep-av-prev');
@@ -2798,7 +2837,7 @@ async function createStories() {
       st.textContent = `스토리 올리는 중… ${i + 1}/${picked.length}`;
       const c = await photoBlob(picked[i], 1440);
       const up = await uploadAsset(c.blob, 'image/jpeg');
-      const sh = picked[i].shared, men = [...new Set([...(edDirty(picked[i]) ? (picked[i].edit.items || []).filter(x => x.mention).map(x => x.mention) : []), ...(sh && sh.author !== S.myId ? [sh.author] : [])])];
+      const sh = picked[i].shared, men = [...new Set([...(edDirty(picked[i]) ? (picked[i].edit.items || []).flatMap(x => x.mention ? [x.mention] : (x.mentions || [])) : []), ...(sh && sh.author !== S.myId ? [sh.author] : [])])];
       const ok = await write(() => S.db.collection('stories').add(Object.assign({ author: S.myId, image: { id: up.id, w: c.w, h: c.h }, createdAt: base + i }, men.length ? { mentions: men } : {}, sh ? { sharedFrom: sh.sid } : {})));
       if (!ok) { dropAsset(up.id); throw { code: '_handled' }; }
       done.push(up.id);
@@ -2947,19 +2986,26 @@ function edLayout(ctx, st, it) {
   const fs = st.FW * .052, font = `${fs}px "Jua","Gowun Dodum",sans-serif`; ctx.font = font;
   return { kind: 'pill', fs, font, w: ctx.measureText(it.text).width + fs * 1.5, h: fs * 2 };
 }
+const ED_OUTLINE = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]].map(([x, y]) => `${x * 2.5}px ${y * 2.5}px 0 #000`).join(',') + ',0 0 4px #000';
 function edItem(ctx, st, it, k) {
   ctx.save(); ctx.scale(k, k); ctx.translate(it.x, it.y); ctx.rotate(it.rot); ctx.scale(it.s, it.s);
   const L = edLayout(ctx, st, it), blur = v => v * k * it.s;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   if (L.kind === 'text') {
     const top = -L.lines.length * L.lh / 2;
-    if (it.bg) {
+    if (it.bg === 1 || it.bg === 2) {
       ctx.fillStyle = it.bg === 1 ? it.color : 'rgba(255,255,255,.9)';
       L.lines.forEach((ln, i) => {
         if (!ln.trim()) return;
         const w = L.ws[i] + L.pad * 2; edRound(ctx, -w / 2, top + i * L.lh - L.pad * .15, w, L.lh + L.pad * .3, L.fs * .28); ctx.fill();
       });
-    } else { ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = blur(L.fs * .18); ctx.shadowOffsetY = blur(L.fs * .03); }
+    }
+    if (it.bg === 3) { // 자막처럼: 글자마다 검은 테두리
+      ctx.font = L.font; ctx.lineJoin = 'round'; ctx.miterLimit = 2; ctx.strokeStyle = '#000'; ctx.lineWidth = L.fs * .16;
+      ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = blur(L.fs * .08);
+      L.lines.forEach((ln, i) => ctx.strokeText(ln, 0, top + i * L.lh + L.lh / 2 + L.fs * .04));
+      ctx.shadowColor = 'transparent';
+    } else if (!it.bg) { ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = blur(L.fs * .18); ctx.shadowOffsetY = blur(L.fs * .03); }
     ctx.font = L.font;
     ctx.fillStyle = it.bg === 1 ? edContrast(it.color) : it.bg === 2 && it.color === '#ffffff' ? '#ff4f9a' : it.color;
     L.lines.forEach((ln, i) => ctx.fillText(ln, 0, top + i * L.lh + L.lh / 2 + L.fs * .04));
@@ -3292,11 +3338,12 @@ const Ed = {
     const d = this.tDraft;
     patch($('#ed-fonts'), Object.keys(ED_FONTS).map(k => `<button type="button" class="${d.font === k ? 'on' : ''}" data-ed="txt-font" data-font="${k}" style="font-family:'${ED_FONTS[k][0]}',sans-serif">${ED_FONTS[k][2]}</button>`).join(''));
     patch($('#ed-tcolors'), ED_COLORS.map(c => `<button type="button" class="ed-dot${d.color === c ? ' on' : ''}" data-ed="txt-color" data-c="${c}" style="background:${c}" aria-label="글자 색 ${c}"></button>`).join(''));
-    const sb = $('#ed-tstyle'); sb.className = 'ed-ic tstyle s' + d.bg; sb.setAttribute('aria-label', ['글자 배경 없음', '색 배경', '흰 배경'][d.bg] + ' (눌러서 바꾸기)');
+    const sb = $('#ed-tstyle'); sb.className = 'ed-ic tstyle s' + d.bg; sb.setAttribute('aria-label', ['글자 배경 없음', '색 배경', '흰 배경', '자막 테두리'][d.bg] + ' (눌러서 바꾸기)');
     const ta = $('#ed-ta'), [fam, kk] = ED_FONTS[d.font] || ED_FONTS.jua;
     ta.style.fontFamily = `"${fam}","Gowun Dodum",sans-serif`; ta.style.fontSize = (30 * kk) + 'px';
     if (d.bg === 1) { ta.style.background = d.color; ta.style.color = edContrast(d.color); ta.style.textShadow = 'none'; }
     else if (d.bg === 2) { ta.style.background = 'rgba(255,255,255,.9)'; ta.style.color = d.color === '#ffffff' ? '#ff4f9a' : d.color; ta.style.textShadow = 'none'; }
+    else if (d.bg === 3) { ta.style.background = 'transparent'; ta.style.color = d.color; ta.style.textShadow = ED_OUTLINE; }
     else { ta.style.background = 'transparent'; ta.style.color = d.color; ta.style.textShadow = '0 1px 6px rgba(0,0,0,.5)'; }
     this.fitTa();
   },
@@ -3304,12 +3351,13 @@ const Ed = {
   closeText() {
     if ($('#ed-type').hidden) return;
     const st = this.st, d = this.tDraft, text = $('#ed-ta').value.replace(/^\n+|\s+$/g, '');
-    $('#ed-type').hidden = true; $('#editor').classList.remove('typing'); $('#ed-ta').blur(); this.editingId = null;
+    $('#ed-type').hidden = true; $('#editor').classList.remove('typing'); $('#ed-ta').blur(); $('#mention-pop').hidden = true; this.editingId = null;
     if (st) {
       const ex = this.tEdit && st.items.find(x => x.id === this.tEdit);
       this.change(() => {
-        if (ex) { if (!text.trim()) st.items.splice(st.items.indexOf(ex), 1); else Object.assign(ex, { text, font: d.font, color: d.color, bg: d.bg }); }
-        else if (text.trim()) st.items.push({ id: edRid(), type: 'text', text, font: d.font, color: d.color, bg: d.bg, x: st.FW / 2, y: st.FH * .42, s: 1, rot: 0 });
+        const men = findMentions(text); // 글자 속 @닉네임 → 그 사람에게 언급 알림
+        if (ex) { if (!text.trim()) st.items.splice(st.items.indexOf(ex), 1); else { Object.assign(ex, { text, font: d.font, color: d.color, bg: d.bg }); if (men.length) ex.mentions = men; else delete ex.mentions; } }
+        else if (text.trim()) st.items.push(Object.assign({ id: edRid(), type: 'text', text, font: d.font, color: d.color, bg: d.bg, x: st.FW / 2, y: st.FH * .42, s: 1, rot: 0 }, men.length ? { mentions: men } : {}));
       });
       edLoadFonts(st.items).then(() => this.req());
     }
@@ -3319,7 +3367,6 @@ const Ed = {
   stickers() {
     const t = todayKey(), [y, m, d] = t.split('-'), n = ddayN(t), now = new Date(), hh = now.getHours();
     const out = [];
-    for (const p of partners()) if (p.nickname) out.push({ kind: 'pill', text: '@' + p.nickname, mention: p.uid });
     if (n) out.push({ kind: 'pill', text: `우리 ${n}일째 ♥` });
     out.push({ kind: 'pill', text: `${y}.${m}.${d}` }, { kind: 'pill', text: `${Number(m)}월 ${Number(d)}일 ${WD[weekdayOf(t)]}요일` },
       { kind: 'pill', text: `${hh < 12 ? '오전' : '오후'} ${hh % 12 || 12}:${String(now.getMinutes()).padStart(2, '0')}` }, { kind: 'pill', text: '사랑해 ♥' }, { kind: 'ours', text: 'ours' });
@@ -3446,7 +3493,7 @@ const Ed = {
         case 'txt-done': this.closeText(); break;
         case 'txt-font': this.tDraft.font = t.dataset.font; this.renderType(); $('#ed-ta').focus(); break;
         case 'txt-color': this.tDraft.color = t.dataset.c; this.renderType(); $('#ed-ta').focus(); break;
-        case 'txt-style': this.tDraft.bg = (this.tDraft.bg + 1) % 3; this.renderType(); $('#ed-ta').focus(); break;
+        case 'txt-style': this.tDraft.bg = (this.tDraft.bg + 1) % 4; this.renderType(); $('#ed-ta').focus(); break;
         case 'stk': { const s = this._stk && this._stk[Number(t.dataset.i)]; if (s) this.addSticker(s); break; }
         case 'emoji': this.addSticker({ kind: 'emoji', text: t.dataset.e }); break;
         case 'stk-close': $('#ed-stk').hidden = true; break;
@@ -3830,6 +3877,58 @@ const Duo = {
     const sp = $('#duo-speed'); if (sp) sp.textContent = this.speed + '×';
   }
 };
+/* ---------- 출석 체크: 매일 1코인, 7일 연속이면 7일째 3코인 (일주일마다 다시 1일째) ---------- */
+const attCoinsFor = day => day === 7 ? 3 : 1;
+const attendCoins = () => S.attend.reduce((a, b) => a + (Number(b && b.coins) || 0), 0);
+function attState(uid = S.myId) {
+  const t = todayKey(), list = S.attend.filter(a => a && a.uid === uid && a.date && a.date <= t).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0), last = list[list.length - 1];
+  if (last && last.date === t) return { today: true, day: last.day || 1, done: last.day || 1 };
+  const day = last && last.date === addDays(t, -1) ? ((last.day || 0) % 7) + 1 : 1; // 하루라도 빠지면 1일째부터
+  return { today: false, day, done: day - 1 };
+}
+function attStampsHTML(a, big) {
+  let h = '';
+  for (let i = 1; i <= 7; i++) {
+    const done = i <= a.done || (a.today && i === a.day), now = !a.today && i === a.day, c = attCoinsFor(i), pop = a.today && i === a.day && S.attJust === todayKey();
+    h += `<span class="att-st${done ? ' done' : ''}${now ? ' now' : ''}${i === 7 ? ' gift' : ''}${pop ? ' pop' : ''}">${big ? `<small>${i}일</small>` : ''}<i>${done ? ICON.heartFill : i === 7 ? '🎁' : ''}</i>${big ? `<b>${COIN}${c}</b>` : ''}</span>`;
+  }
+  return `<span class="att-row${big ? ' big' : ''}">${h}</span>`;
+}
+function attCardHTML() {
+  if (S.mode !== 'live' || !S.myId || !S.loaded.attend) return '';
+  const a = attState(), c = attCoinsFor(a.day), next = attCoinsFor(a.today ? a.day % 7 + 1 : a.day);
+  const btn = a.today ? `<span class="att-done">오늘 출석 완료<small>내일 +${next}</small></span>` : `<span class="att-btn">출석하기 <b>+${c}</b></span>`;
+  return `<button class="att-card" type="button" data-act="${a.today ? 'att-open' : 'att-do'}" aria-label="출석 체크"><span class="att-info"><b>출석 체크 <small>${a.day}일째</small></b>${attStampsHTML(a, false)}</span>${btn}</button>`;
+}
+function attendSheetHTML() {
+  const a = attState(), c = attCoinsFor(a.day);
+  const ps = partners().map(x => { const pa = attState(x.uid); return `<p class="att-partner">${avatar(x.uid, 22)}<span>${esc(nameOf(x.uid))}${pa.today ? `${ga(nameOf(x.uid))} 오늘 출석했어요 · ${pa.day}일째` : `${hasBatchim(nameOf(x.uid)) ? '은' : '는'} 아직 출석 전이에요`}</span></p>`; }).join('');
+  const head = a.today ? (a.day === 7 ? '일주일 완주! 🎉 3코인을 받았어요' : `오늘 출석 완료! 1코인을 받았어요`) : a.day === 7 ? '오늘 출석하면 일주일 완주, 3코인이에요!' : `오늘은 ${a.day}일째 출석이에요`;
+  return `<div class="att">
+    <p class="att-head">${head}</p>
+    <p class="muted att-sub">매일 출석하면 ${COIN}1코인, 7일 연속이면 7일째에 ${COIN}3코인! 하루라도 빠지면 1일째부터 다시 시작해요.</p>
+    ${attStampsHTML(a, true)}
+    ${a.today ? `<button class="btn ghost block" type="button" data-act="att-pet">${COIN}${petCoins()}코인으로 토끼 꾸미러 가기</button>` : `<button class="btn primary block att-go" type="button" data-act="att-do">출석하고 ${c}코인 받기</button>`}
+    ${ps}
+  </div>`;
+}
+let attBusy = false;
+async function attendNow() {
+  if (attBusy || !guardWrite()) return;
+  const a = attState(); if (a.today) { openSheet('attend'); return; }
+  const t = todayKey(), coins = attCoinsFor(a.day); attBusy = true;
+  try {
+    const ok = await write(() => S.db.doc('attend/' + t + '__' + safeKey(S.myId)).set({ date: t, uid: S.myId, day: a.day, coins, createdAt: Date.now() }));
+    if (ok) { S.attJust = t; Haptic.tap(); if (!S.sheet) openSheet('attend'); render(); } // 출석판에서 도장이 콕 찍혀요
+  } finally { attBusy = false; }
+}
+function maybeAttendPop() { // 하루에 한 번, 앱을 열면 출석판이 먼저 떠요
+  if (S.mode !== 'live' || !S.canWrite || !S.myId || !S.loaded.attend || !S.loaded.profiles || !profileOf(S.myId) || S.sheet || Viewer.isOpen() || S.view === 'new') return;
+  if (!$('#pet-up').hidden || !$('#editor').hidden) return;
+  const t = todayKey(), k = 'ours-attend-pop-' + safeKey(S.myId);
+  try { if (localStorage.getItem(k) === t) return; localStorage.setItem(k, t); } catch (e) { return; }
+  if (!attState().today) openSheet('attend');
+}
 /* ---------- 썸원 기록 가져오기 ----------
    채팅으로 받은 someone-import.json(질문·답, 그림)을 골라서 날짜에 맞게 넣어요.
    가져온 기록에는 src: 'someone'이 붙어서 토끼 성장·코인·소식·알림에는 안 쳐요. */
@@ -4215,7 +4314,7 @@ function bindPullRefresh() {
     if (!navigator.vibrate) Haptic.tap(); busy = true;
     P.el.style.transition = `transform .35s ${SPRING}`; P.el.style.transform = 'translate3d(0,56px,0)';
     ptr.style.transition = `transform .35s ${SPRING}`; ptr.style.transform = 'translate3d(-50%,0,0) scale(1)'; ptr.style.opacity = 1; ptr.classList.add('spin');
-    const B = window.OursBackend, cols = ['posts', 'stories', 'comments', 'likes', 'reposts', 'storyviews', 'storylikes', 'answers', 'drawings', 'letters', 'letterbodies', 'plans', 'petbuys', 'settings', 'dayq'];
+    const B = window.OursBackend, cols = ['posts', 'stories', 'comments', 'likes', 'reposts', 'storyviews', 'storylikes', 'answers', 'drawings', 'letters', 'letterbodies', 'plans', 'petbuys', 'settings', 'dayq', 'attend'];
     try { await Promise.all([sleep(650), B && B.refresh && S.mode === 'live' ? Promise.all(cols.map(c => B.refresh(c))) : null]); } catch (e) { /* the realtime feed keeps going anyway */ }
     busy = false; render(); settle(P.el);
   };
@@ -4237,7 +4336,7 @@ function rich(text) {
   }
   return h.replace(/\u0000([^\u0001]*)\u0001/g, (_, uid) => `<button type="button" class="mention" data-act="profile" data-uid="${esc(uid)}">@${esc(nameOf(uid))}</button>`);
 }
-const MENTION_INPUTS = '#cap-in, #cmt-in, #pe-cap, [data-pcap], [data-pe], #vw-reply-in, #rp-note';
+const MENTION_INPUTS = '#cap-in, #cmt-in, #pe-cap, [data-pcap], [data-pe], #vw-reply-in, #rp-note, #ed-ta';
 function mentionToken(el) {
   const v = el.value || '', c = el.selectionStart == null ? v.length : el.selectionStart;
   const m = /(^|[\s(])@([^\s@]{0,20})$/.exec(v.slice(0, c));
@@ -4336,7 +4435,7 @@ function petDone() {
 const petStageOf = n => n >= PET_NEED[2] ? 2 : n >= PET_NEED[1] ? 1 : 0;
 const petStage = () => petStageOf(petDone());
 const ownDrawings = () => S.drawings.filter(d => d && d.src !== 'someone'); // 이 앱에서 직접 그린 그림만
-function petCoins() { const spent = S.petbuys.reduce((a, b) => a + (Number(b.cost) || 0), 0); return Math.max(0, ownDrawings().length - spent); }
+function petCoins() { const spent = S.petbuys.reduce((a, b) => a + (Number(b.cost) || 0), 0); return Math.max(0, ownDrawings().length + attendCoins() - spent); }
 const petOwned = id => (PET_BY[id] && PET_BY[id].price === 0) || S.petbuys.some(b => b.id === id || b.item === id);
 const COIN = '<svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#ffd25e" stroke="#e8a51f" stroke-width="1.6"/><circle cx="12" cy="12" r="7" fill="none" stroke="#f3b93a" stroke-width="1.2"/><path d="M12 16.6s-3.6-2.1-4.4-4.4c-.6-1.6.4-3.1 2-3.1 1 0 1.7.6 2.4 1.5.7-.9 1.4-1.5 2.4-1.5 1.6 0 2.6 1.5 2 3.1-.8 2.3-4.4 4.4-4.4 4.4z" fill="#e8971a"/></svg>';
 const eul = w => hasBatchim(w) ? '을' : '를';
@@ -4498,7 +4597,7 @@ function renderPet() {
   h += `<div class="pet-room" id="pet-room">${roomSVG(cfg, st)}<div class="pet-say" id="pet-say" hidden></div></div>`;
   h += `<div class="pet-stage"><div class="ps-row"><b>${cfg.fur === 'dragon' ? '드래곤 ' : ''}${PET_STAGE[st]}</b><span>${[0, 1, 2].map(i => `<i class="${i <= st ? 'on' : ''}">${PET_STAGE[i]}</i>`).join('')}</span></div><span class="pet-bar"><i style="width:${pct.toFixed(1)}%"></i></span>
     <p>${next ? `둘 다 답한 질문 <b>${n}개</b> · ${PET_STAGE[st + 1]}까지 <b>${next - n}개</b> 남았어요` : `다 자랐어요! 둘 다 답한 질문 <b>${n}개</b>`}${sealed ? ` · 토끼캡슐 편지 ${sealed}통이 기다리고 있어요` : ''}</p>
-    <p class="muted">그림 1장을 그릴 때마다 ${COIN}1코인 · 지금까지 그린 그림 ${ownDrawings().length}장</p></div>`;
+    <p class="muted">그림 1장 ${COIN}1코인 · 매일 출석 ${COIN}1코인 (7일째 ${COIN}3코인) · 지금까지 그린 그림 ${ownDrawings().length}장</p></div>`;
   h += `<div class="seg pet-shop-tabs" role="tablist">${[['skin', '스킨'], ['wear', '옷·소품'], ['room', '방 꾸미기'], ['house', '집']].map(([k, nm]) => `<button type="button" role="tab" class="${tab === k ? 'on' : ''}" aria-selected="${tab === k}" data-act="pet-tab" data-k="${k}">${nm}</button>`).join('')}</div>`;
   const list = PET_ITEMS.filter(x => x.cat === tab);
   h += `<div class="pet-grid">${list.map(it => {
@@ -4638,7 +4737,7 @@ let raf = 0;
 function render() { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; doRender(); }); }
 function doRender() {
   buildIndex(); renderStatus(); renderNav();
-  if (S.view === 'home') { renderStories(); renderDday(); patch($('#petcard'), petCardHTML()); renderFeed(); }
+  if (S.view === 'home') { renderStories(); renderDday(); patch($('#petcard'), petCardHTML()); patch($('#attcard'), attCardHTML()); renderFeed(); }
   else if (S.view === 'rabbit') renderPet();
   else if (S.view === 'pfeed') renderPFeed();
   else if (S.view === 'calendar') renderCalendar();
@@ -4653,6 +4752,7 @@ function doRender() {
   if (Viewer.isOpen()) Viewer.refresh();
   petCheckGrowth();
   maybeOnboard();
+  maybeAttendPop();
 }
 
 /* ---------- routing ---------- */
@@ -4824,6 +4924,9 @@ function bind() {
       case 'replay': openSheet('replay', { date: t.dataset.date, uid: t.dataset.uid }); break;
       case 'rp-play': Replay.toggle(); break;
       case 'duo-play': Duo.toggle(); break;
+      case 'att-open': openSheet('attend'); break;
+      case 'att-do': attendNow(); break;
+      case 'att-pet': closeSheet(true); go('rabbit'); break;
       case 'duo-speed': Duo.cycle(); break;
       case 'rp-again': Replay.restart(); break;
       case 'rp-speed': Replay.cycle(); break;
@@ -4985,7 +5088,7 @@ async function boot() {
   sub('answers', db.collection('answers').orderBy('createdAt', 'desc').limit(1000));
   sub('drawings', db.collection('drawings').orderBy('createdAt', 'desc').limit(500));
   sub('stories', db.collection('stories').orderBy('createdAt', 'desc').limit(500));
-  for (const c of ['highlights', 'letters', 'letterbodies', 'plans', 'anniversaries', 'myquestions', 'settings', 'config', 'storyviews', 'storylikes', 'petbuys', 'dayq']) sub(c, db.collection(c));
+  for (const c of ['highlights', 'letters', 'letterbodies', 'plans', 'anniversaries', 'myquestions', 'settings', 'config', 'storyviews', 'storylikes', 'petbuys', 'dayq', 'attend']) sub(c, db.collection(c));
   refreshPeople(); render();
   Push.init();
 }
