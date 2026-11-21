@@ -978,6 +978,23 @@ input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):n
 .rp-play svg path{fill:currentColor}
 .rp-play:disabled{opacity:.45}
 .rp-speed{min-width:46px;height:34px;border-radius:17px;background:rgba(var(--fg),.08);font-family:var(--font-cute);font-size:15px}
+/* update 8: story ring that pops, drawings replay side by side */
+.av.sring:not(.seen){background:conic-gradient(from 210deg,#ffd60a,#ff8a00,#ff2e63,#c13cff,#5b6cff,#22d3ee,#ffd60a);padding:3px;box-shadow:0 0 0 1px rgba(255,214,10,.25),0 0 16px rgba(255,138,0,.35)}
+.av.sring:not(.seen) .av-in{border-width:2.5px}
+:root[data-theme=light] .av.sring:not(.seen){box-shadow:0 0 12px rgba(255,138,0,.28)}
+.dimg.has-rp{position:relative}
+.dimg .dcv{position:absolute;inset:0;width:100%;height:100%;background:#fff;opacity:0;transition:opacity .25s;pointer-events:none}
+.dimg.has-rp.playing .dcv{opacity:1}
+.duo-ctl{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-top:12px}
+.duo-play{display:flex;align-items:center;justify-content:center;gap:8px;height:44px;border-radius:22px;background:rgba(var(--fg),.08);font-family:var(--font-cute);font-size:15px;color:var(--text)}
+.duo-play svg{width:18px;height:18px;color:var(--pink)}
+.duo-play svg path{fill:currentColor}
+.duo-play.on{background:var(--candy);color:#fff}
+.duo-play.on svg{color:#fff}
+.duo-play:disabled{opacity:.55}
+.duo-bar{grid-column:1/-1}
+.ptr.ready{animation:ptrPop .32s cubic-bezier(.2,1.6,.35,1)}
+@keyframes ptrPop{0%{scale:1}45%{scale:1.32}100%{scale:1}}
 </style>
 </head>
 <body>
@@ -1379,7 +1396,7 @@ function avatar(uid, size, opts = {}) {
   if (p && p.avatarId) inner = `<img src="${blobUrl(p.avatarId)}" alt="" loading="lazy">`;
   else if (pp && pp.name && pp.avatarUrl) inner = `<img src="${esc(pp.avatarUrl)}" alt="">`;
   else inner = esc((nm || '?').trim().charAt(0) || '?');
-  return `<span class="av${opts.ring ? ' ring' : ''}${opts.seen ? ' seen' : ''}" style="--s:${size}px" aria-hidden="true"><span class="av-in">${inner}</span></span>`;
+  return `<span class="av${opts.ring ? ' ring sring' : ''}${opts.seen ? ' seen' : ''}" style="--s:${size}px" aria-hidden="true"><span class="av-in">${inner}</span></span>`;
 }
 const HANDS = { himelody: '하이멜로디', gamja: '감자꽃', poor: '푸어스토리', gaegu: '개구', single: '싱글데이' };
 const HAND_SAMPLE = '오늘도 네 생각 했어';
@@ -1776,17 +1793,21 @@ function renderDrawing() {
   updateDrawButtons();
 
   const meName = S.myId ? nameOf(S.myId) : '나';
-  let cards = `<figure class="dcard">${mine ? `<div class="dimg"><img src="${blobUrl(mine.imageId)}" alt="내가 그린 그림"></div>` : '<div class="dimg empty">위 그림판에 그려서 올려 보세요</div>'}<figcaption>${avatar(S.myId, 22)}<span>${esc(meName)}</span>${mine && mine.replay && !S.dRedraw ? rpBtn(mine) : ''}${mine && !S.dRedraw && S.canWrite && S.mode === 'live' ? '<button class="link sm" type="button" data-act="d-redraw">다시 그리기</button>' : ''}</figcaption></figure>`;
+  const duo = []; // 과정이 저장된 그림들: 같이 다시 그려져요
+  const dimg = (d, alt) => { const k = d.replay && !S.dRedraw ? d.date + '__' + safeKey(d.uid) : ''; if (k) duo.push({ k, date: d.date, uid: d.uid }); return `<div class="dimg${k ? ' has-rp' : ''}"${k ? ` data-rpk="${esc(k)}"` : ''}><img src="${blobUrl(d.imageId)}" alt="${alt}">${k ? '<canvas class="dcv" width="720" height="720" aria-hidden="true"></canvas>' : ''}</div>`; };
+  let cards = `<figure class="dcard">${mine ? dimg(mine, '내가 그린 그림') : '<div class="dimg empty">위 그림판에 그려서 올려 보세요</div>'}<figcaption>${avatar(S.myId, 22)}<span>${esc(meName)}</span>${mine && !S.dRedraw && S.canWrite && S.mode === 'live' ? '<button class="link sm" type="button" data-act="d-redraw">다시 그리기</button>' : ''}</figcaption></figure>`;
   const ps = partners();
   if (!ps.length) cards += `<figure class="dcard"><div class="dimg empty">상대가 들어오면 여기에 그림이 보여요</div><figcaption><span>상대</span></figcaption></figure>`;
   for (const p of ps) {
     const d = S.drawings.find(x => x.date === key && x.uid === p.uid); const nm = nameOf(p.uid);
     const inner = !d ? '<div class="dimg empty">아직 그리는 중이에요</div>'
       : !mine ? `<div class="dimg empty lockd">${ICON.lock}<span>내 그림을 올리면 열려요</span></div>`
-      : `<div class="dimg"><img src="${blobUrl(d.imageId)}" alt="${esc(nm)}의 그림"></div>`;
-    cards += `<figure class="dcard">${inner}<figcaption>${avatar(p.uid, 22)}<span>${esc(nm)}</span>${d && mine && d.replay ? rpBtn(d) : ''}</figcaption></figure>`;
+      : dimg(d, `${esc(nm)}의 그림`);
+    cards += `<figure class="dcard">${inner}<figcaption>${avatar(p.uid, 22)}<span>${esc(nm)}</span></figcaption></figure>`;
   }
-  patch($('#d-results'), `<div class="pair">${cards}</div>`);
+  const ctl = duo.length ? `<div class="duo-ctl"><button class="duo-play" type="button" data-act="duo-play" id="duo-play">${ICON2.play}<span>${duo.length > 1 ? '그리는 과정 같이 보기' : '그리는 과정 보기'}</span></button><button class="rp-speed" type="button" data-act="duo-speed" id="duo-speed">1×</button><div class="rp-bar duo-bar"><i id="duo-fill"></i></div></div>` : '';
+  patch($('#d-results'), `<div class="pair">${cards}</div>${ctl}`);
+  Duo.mount(key, duo, !!mine && (key !== todayKey() || duo.length > 1));
 
   const days = [...new Set(S.drawings.map(d => d.date))].filter(d => d && d !== key).sort().reverse().slice(0, 60);
   let hh;
@@ -3638,7 +3659,6 @@ function renderSettings() {
   if (S.assets && !S.usageAsked) { S.usageAsked = true; S.assets.list().then(r => { if (r && r.usage) { S.usage = r.usage; render(); } }).catch(() => {}); }
 }
 /* ---------- 그리는 과정 (타임랩스) ---------- */
-const rpBtn = d => `<button class="link sm rp-btn" type="button" data-act="replay" data-date="${esc(d.date)}" data-uid="${esc(d.uid)}">${ICON2.play}과정</button>`;
 const b64enc = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
 const b64dec = str => { const b = atob(str), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
 async function packReplay(log) {
@@ -3747,6 +3767,67 @@ const Replay = {
     const m = $('#rp-msg'); if (m) { m.textContent = msg; m.hidden = !msg; }
     const pb = $('#rp-play'); if (pb) { pb.innerHTML = this.playing ? '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg>' : ICON2.play; pb.setAttribute('aria-label', this.playing ? '멈춤' : '재생'); pb.disabled = this.state !== 'ready'; }
     const sp = $('#rp-speed'); if (sp) sp.textContent = this.speed + '×';
+  }
+};
+// 그림 화면: 두 사람 그림이 나란히, 그리는 과정도 같은 시계로 함께 다시 그려져요
+const Duo = {
+  key: '', items: [], tls: {}, total: 0, base: 1, speed: 1, tau: 0, last: 0, raf: 0, playing: false, state: 'idle', auto: new Set(), tok: 0,
+  mount(date, items, autoplay) {
+    const sig = date + '|' + items.map(x => x.k).join(',');
+    if (sig !== this.key) {
+      this.stop(); this.key = sig; this.items = items; this.tls = {}; this.total = 0; this.tau = 0; this.state = items.length ? 'loading' : 'idle';
+      if (items.length) this.load(sig, date, autoplay);
+    }
+    this.paint(); this.ui();
+  },
+  async load(sig, date, autoplay) {
+    const tok = ++this.tok;
+    await Promise.all(this.items.map(async it => {
+      try {
+        const snap = await S.db.doc('replays/' + it.k).get();
+        const doc = snap && snap.exists ? snap.data() : null;
+        if (doc) this.tls[it.k] = replayTimeline(await unpackReplay(doc));
+      } catch (e) { console.warn('[ours] replay', e); }
+    }));
+    if (tok !== this.tok || sig !== this.key) return;
+    const tls = Object.values(this.tls);
+    if (!tls.length) { this.state = 'none'; this.ui(); return; }
+    this.total = Math.max(...tls.map(t => t.total)); this.base = Math.max(1, this.total / 14000); // 길어도 14초 안팎
+    this.state = 'ready';
+    if (autoplay && !this.auto.has(sig)) { this.auto.add(sig); this.restart(); } else { this.tau = this.total; this.paint(); this.ui(); }
+  },
+  frame(now) {
+    this.raf = 0; if (!this.playing) return;
+    const dt = Math.min(100, now - (this.last || now)); this.last = now;
+    this.tau = Math.min(this.total, this.tau + dt * this.base * this.speed);
+    if (this.tau >= this.total) this.playing = false; // 다 그리면 원래 그림이 그대로 남아요
+    this.paint();
+    if (!this.playing) { this.ui(); return; }
+    this.raf = requestAnimationFrame(t => this.frame(t));
+  },
+  paint() {
+    const live = this.playing || (this.state === 'ready' && this.tau < this.total);
+    for (const it of this.items) {
+      const box = document.querySelector(`#d-results [data-rpk="${CSS.escape(it.k)}"]`); if (!box) continue;
+      const cv = box.querySelector('.dcv'), tl = this.tls[it.k];
+      box.classList.toggle('playing', !!(live && tl));
+      if (cv && tl && live) paintReplay(cv.getContext('2d'), cv.width, tl, Math.min(this.tau, tl.total));
+    }
+    const f = $('#duo-fill'); if (f) f.style.width = (this.total ? this.tau / this.total * 100 : 0).toFixed(2) + '%';
+  },
+  play() { if (this.state !== 'ready' || this.playing) return; if (this.tau >= this.total) this.tau = 0; this.playing = true; this.last = 0; this.ui(); this.raf = requestAnimationFrame(t => this.frame(t)); },
+  stop() { this.playing = false; if (this.raf) cancelAnimationFrame(this.raf); this.raf = 0; },
+  restart() { this.stop(); this.tau = 0; this.paint(); this.play(); },
+  toggle() { if (this.playing) { this.stop(); this.ui(); } else this.play(); },
+  cycle() { this.speed = this.speed === 1 ? 2 : this.speed === 2 ? 4 : 1; this.ui(); },
+  ui() {
+    const b = $('#duo-play'); if (!b) return;
+    const many = this.items.length > 1;
+    const label = this.state === 'loading' ? '과정 불러오는 중…' : this.state === 'none' ? '과정이 저장되지 않았어요' : this.playing ? '멈추기' : this.tau > 0 && this.tau < this.total ? '이어서 보기' : many ? '그리는 과정 같이 보기' : '그리는 과정 보기';
+    const icon = this.playing ? '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg>' : ICON2.play;
+    const h = icon + `<span>${label}</span>`; if (b._h !== h) { b._h = h; b.innerHTML = h; }
+    b.disabled = this.state !== 'ready'; b.classList.toggle('on', this.playing);
+    const sp = $('#duo-speed'); if (sp) sp.textContent = this.speed + '×';
   }
 };
 /* ---------- 썸원 기록 가져오기 ----------
@@ -4116,8 +4197,10 @@ function bindPullRefresh() {
     pr.el.style.transform = `translate3d(0,${pr.pull}px,0)`;
     const p = Math.min(1, pr.pull / 72);
     ptr.style.opacity = p; ptr.style.transform = `translate3d(-50%,${pr.pull * 0.5 - 30}px,0) scale(${0.5 + p * 0.5}) rotate(${p * 200}deg)`;
-    ptr.classList.toggle('ready', pr.pull >= 72);
-    Haptic.arm(pr.pull >= 72);
+    const ready = pr.pull >= 72;
+    if (ready && !pr.ready && navigator.vibrate) Haptic.tap(); // 안드로이드: 당겨서 하트가 커지는 순간 톡
+    pr.ready = ready; ptr.classList.toggle('ready', ready);
+    Haptic.arm(ready && !navigator.vibrate); // 아이폰: 손을 떼는 순간 (iOS가 허락할 때만)
   }, { passive: false });
   const settle = el => {
     el.style.transition = `transform .5s ${SPRING}`; el.style.transform = '';
@@ -4129,7 +4212,7 @@ function bindPullRefresh() {
     if (!pr) return;
     const P = pr; pr = null; if (!P.on) { Haptic.arm(false); return; }
     if (P.pull < 72) { Haptic.arm(false); settle(P.el); return; }
-    Haptic.tap(); busy = true;
+    if (!navigator.vibrate) Haptic.tap(); busy = true;
     P.el.style.transition = `transform .35s ${SPRING}`; P.el.style.transform = 'translate3d(0,56px,0)';
     ptr.style.transition = `transform .35s ${SPRING}`; ptr.style.transform = 'translate3d(-50%,0,0) scale(1)'; ptr.style.opacity = 1; ptr.classList.add('spin');
     const B = window.OursBackend, cols = ['posts', 'stories', 'comments', 'likes', 'reposts', 'storyviews', 'storylikes', 'answers', 'drawings', 'letters', 'letterbodies', 'plans', 'petbuys', 'settings', 'dayq'];
@@ -4562,6 +4645,7 @@ function doRender() {
   else if (S.view === 'letters') renderLetters();
   else if (S.view === 'question') renderQuestion();
   else if (S.view === 'drawing') renderDrawing();
+  if (S.view !== 'drawing' && Duo.playing) Duo.stop();
   else if (S.view === 'profile') renderProfile();
   else if (S.view === 'new') renderNew();
   else if (S.view === 'settings') renderSettings();
@@ -4624,7 +4708,7 @@ function bind() {
       case 'q-edit': S.qEditing = true; render(); requestAnimationFrame(() => { const ta = $('#q-input'); if (ta) ta.focus(); }); break;
       case 'q-cancel': S.qEditing = false; render(); break;
       case 'q-save': saveAnswer(); break;
-      case 'd-date': S.dDate = t.dataset.date; S.dRedraw = false; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); break;
+      case 'd-date': S.dDate = t.dataset.date; S.dRedraw = false; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); break; // 두 그림과 과정이 함께 재생돼요
       case 'd-go': S.dDate = t.dataset.date; S.dRedraw = false; go('drawing'); break;
       case 'd-today': S.dDate = todayKey(); S.dRedraw = false; render(); break;
       case 'd-redraw': S.dRedraw = true; render(); break;
@@ -4739,6 +4823,8 @@ function bind() {
       case 'set-posts': openSheet('posts'); break;
       case 'replay': openSheet('replay', { date: t.dataset.date, uid: t.dataset.uid }); break;
       case 'rp-play': Replay.toggle(); break;
+      case 'duo-play': Duo.toggle(); break;
+      case 'duo-speed': Duo.cycle(); break;
       case 'rp-again': Replay.restart(); break;
       case 'rp-speed': Replay.cycle(); break;
       case 'set-import': if (S.imp.st === 'done') S.imp = { st: 'idle' }; openSheet('someone'); break;
