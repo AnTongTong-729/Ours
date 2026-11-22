@@ -596,6 +596,9 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:rgba(255
 .vw-stage{position:absolute;inset:0;display:grid;place-items:center}
 .vw-stage img{width:100%;height:100%;object-fit:contain;-webkit-user-drag:none}
 .vw-stage img.paper{background:#fff;height:auto;max-height:100%;aspect-ratio:1}
+.vw-stage img{transform-origin:50% 50%}
+.vw-bars,.vw-head,.vw-foot{transition:opacity .2s}
+.viewer.zoomed .vw-bars,.viewer.zoomed .vw-head,.viewer.zoomed .vw-foot{opacity:0;pointer-events:none}
 .vw-foot{position:absolute;left:0;right:0;bottom:0;padding:48px 16px calc(18px + env(safe-area-inset-bottom,0px));background:linear-gradient(0deg,rgba(0,0,0,.8),transparent);z-index:3;display:grid;gap:10px}
 .vw-foot:empty{display:none}
 .vw-foot .cap{padding:0;margin:0}
@@ -2683,7 +2686,7 @@ const Viewer = {
   },
   close() {
     cancelAnimationFrame(this.raf); this.raf = 0; clearTimeout(this._ct); this.closing = false;
-    $('#viewer').hidden = true; this.items = []; this.resetCard();
+    $('#viewer').hidden = true; this.items = []; this.resetCard(); if (this.zoomReset) this.zoomReset(false);
     if (!S.sheet) document.body.classList.remove('locked');
     render();
   },
@@ -2722,6 +2725,7 @@ const Viewer = {
   show() {
     const it = this.current(); if (!it) { this.close(); return; }
     if (it.kind === 'story') { markStorySeen(it.ref); recordView(it); }
+    if (this.zoomReset) this.zoomReset(false);
     this.elapsed = 0; this.last = performance.now(); this.paused = false;
     this.refresh(true);
     cancelAnimationFrame(this.raf);
@@ -4306,8 +4310,44 @@ const rubber = (d, k = 0.55, lim = 120) => lim * (1 - Math.exp(-Math.max(0, d) *
 
 /* full-screen viewer: drag down to close, drag sideways to change, springs back if you let go early */
 function bindViewerGestures() {
-  const stage = $('#vw-stage'), card = $('#vw-card'), bg = $('#vw-bg');
-  let g = null, holdT = 0;
+  const stage = $('#vw-stage'), card = $('#vw-card'), bg = $('#vw-bg'), img = $('#vw-img'), pts = new Map();
+  let g = null, holdT = 0, z = { s: 1, x: 0, y: 0 }, pz = null;
+  /* 사진 확대: 두 손가락으로 벌리기(트랙패드 핀치), 확대한 채로 한 손가락으로 움직이기, 톡 누르면 원래대로 */
+  const zoomed = () => z.s > 1.01;
+  const applyZ = anim => {
+    img.style.transition = anim ? `transform .32s ${EASE_OUT}` : 'none';
+    img.style.transform = z.s === 1 && !z.x && !z.y ? '' : `translate3d(${z.x}px,${z.y}px,0) scale(${z.s})`;
+    $('#viewer').classList.toggle('zoomed', zoomed() || !!pz);
+  };
+  const lim = sc => {
+    const r = stage.getBoundingClientRect(), W = r.width, H = r.height;
+    let cw = img.offsetWidth, ch = img.offsetHeight;
+    if (!img.classList.contains('paper') && img.naturalWidth && img.naturalHeight) { const k = Math.min(W / img.naturalWidth, H / img.naturalHeight); cw = img.naturalWidth * k; ch = img.naturalHeight * k; }
+    return { mx: Math.max(0, (cw * sc - W) / 2), my: Math.max(0, (ch * sc - H) / 2) };
+  };
+  const clampZ = () => { const b = lim(z.s); z.x = Math.max(-b.mx, Math.min(b.mx, z.x)); z.y = Math.max(-b.my, Math.min(b.my, z.y)); };
+  const center = () => { const r = stage.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; };
+  const zoomAt = (sc, m0, m, t0, s0) => { const c = center(), f = sc / s0; z.s = sc; z.x = (m.x - c.x) - f * (m0.x - c.x - t0.x); z.y = (m.y - c.y) - f * (m0.y - c.y - t0.y); };
+  Viewer.zoomReset = anim => { z = { s: 1, x: 0, y: 0 }; pz = null; applyZ(anim); };
+  const two = () => { const [a, b] = [...pts.values()]; return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, m: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } }; };
+  const startPinch = () => {
+    clearTimeout(holdT); Haptic.arm(false);
+    if (g && (g.mode === 'down' || g.mode === 'side')) { card.style.transition = 'none'; card.style.transform = ''; card.style.borderRadius = ''; bg.style.opacity = ''; }
+    const t = two(); pz = { d0: t.d, m0: t.m, s0: z.s, t0: { x: z.x, y: z.y } }; g = { mode: 'pinch' }; Viewer.paused = true; applyZ(false);
+  };
+  const settleZ = () => {
+    pz = null;
+    if (z.s < 1.05) { Viewer.zoomReset(true); Viewer.paused = false; return; }
+    if (z.s > 4) { const c = center(); zoomAt(4, c, c, { x: z.x, y: z.y }, z.s); }
+    clampZ(); applyZ(true);
+  };
+  stage.addEventListener('wheel', e => { // 트랙패드 핀치 / Ctrl+휠
+    if (!e.ctrlKey || Viewer.closing) return;
+    e.preventDefault();
+    const s0 = z.s, sc = Math.max(1, Math.min(4, s0 * Math.exp(-e.deltaY * 0.01))), m = { x: e.clientX, y: e.clientY };
+    zoomAt(sc, m, m, { x: z.x, y: z.y }, s0);
+    if (!zoomed()) { Viewer.zoomReset(false); Viewer.paused = false; } else { clampZ(); applyZ(false); Viewer.paused = true; }
+  }, { passive: false });
   const setDrag = (x, y, s, r, a) => { card.style.transform = `translate3d(${x}px,${y}px,0) scale(${s})`; card.style.borderRadius = r + 'px'; bg.style.opacity = a; };
   const springBack = () => {
     card.style.transition = `transform .5s ${SPRING}, border-radius .4s ${EASE_OUT}`; bg.style.transition = `opacity .35s ${EASE_OUT}`;
@@ -4315,15 +4355,32 @@ function bindViewerGestures() {
     Viewer.paused = false;
   };
   stage.addEventListener('pointerdown', e => {
-    if (g || Viewer.closing) return;
+    if (Viewer.closing) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     try { stage.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ }
+    if (pts.size === 2) { startPinch(); return; }
+    if (g) return;
     const now = performance.now();
     g = { id: e.pointerId, x: e.clientX, y: e.clientY, t: now, lx: e.clientX, ly: e.clientY, lt: now, vx: 0, vy: 0, mode: null };
     card.style.transition = 'none'; bg.style.transition = 'none';
+    if (zoomed()) { Object.assign(g, { mode: 'pan', zx: z.x, zy: z.y }); Viewer.paused = true; return; }
     clearTimeout(holdT); holdT = setTimeout(() => { Viewer.paused = true; if (g) g.held = true; }, 220);
   });
   stage.addEventListener('pointermove', e => {
+    const pt = pts.get(e.pointerId); if (pt) { pt.x = e.clientX; pt.y = e.clientY; }
+    if (g && g.mode === 'pinch') {
+      if (pts.size < 2 || !pz) return;
+      const t = two(), sc = Math.max(0.85, Math.min(5, pz.s0 * t.d / pz.d0));
+      zoomAt(sc, pz.m0, t.m, pz.t0, pz.s0); applyZ(false);
+      return;
+    }
     if (!g || e.pointerId !== g.id) return;
+    if (g.mode === 'pan') {
+      const b = lim(z.s), soft = (v, m) => v > m ? m + (v - m) * 0.35 : v < -m ? -m + (v + m) * 0.35 : v;
+      z.x = soft(g.zx + e.clientX - g.x, b.mx); z.y = soft(g.zy + e.clientY - g.y, b.my); applyZ(false);
+      return;
+    }
+    if (g.mode === 'none') return;
     const now = performance.now(), dt = Math.max(1, now - g.lt);
     g.vx = g.vx * 0.4 + 0.6 * (e.clientX - g.lx) / dt; g.vy = g.vy * 0.4 + 0.6 * (e.clientY - g.ly) / dt; g.lx = e.clientX; g.ly = e.clientY; g.lt = now;
     const dx = e.clientX - g.x, dy = e.clientY - g.y;
@@ -4344,10 +4401,24 @@ function bindViewerGestures() {
     }
   });
   const end = e => {
+    pts.delete(e.pointerId);
+    if (g && g.mode === 'pinch') {
+      if (pts.size >= 2) { startPinch(); return; }
+      settleZ();
+      if (pts.size === 1) { const [[id, p]] = [...pts]; const now = performance.now(); g = { id, x: p.x, y: p.y, t: now, lx: p.x, ly: p.y, lt: now, vx: 0, vy: 0, mode: zoomed() ? 'pan' : 'none', zx: z.x, zy: z.y, moved: true }; }
+      else g = null;
+      return;
+    }
     if (!g || e.pointerId !== g.id) return;
     clearTimeout(holdT);
     const G = g; g = null;
     const dx = e.clientX - G.x, dy = e.clientY - G.y, dt = performance.now() - G.t;
+    if (G.mode === 'none') { Viewer.paused = false; return; }
+    if (G.mode === 'pan') {
+      if (!G.moved && e.type !== 'pointercancel' && Math.hypot(dx, dy) < 8 && dt < 300) { Viewer.zoomReset(true); Viewer.paused = false; } // 톡: 원래 크기로
+      else { clampZ(); applyZ(true); }
+      return;
+    }
     if (performance.now() - G.lt > 90) { G.vx = 0; G.vy = 0; Haptic.arm(G.mode === 'down' ? dy > 120 : G.mode === 'side' && Math.abs(dx) > innerWidth * 0.22); } // finger stopped before letting go
     if (e.type === 'pointercancel') Haptic.arm(false);
     if (G.mode === 'down') {
