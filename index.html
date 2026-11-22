@@ -168,6 +168,25 @@ b,strong,.btn,.link,.pill,.chip,.eyebrow,.sec-title,.view-title,.who,.prof-name,
 .ed-stk-em{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:4px}
 .ed-stk-em button{font-size:34px;height:54px;border-radius:12px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 .ed-stk-em button:active{background:rgba(var(--fg),.1)}
+.ed-stk-head{gap:8px}
+.ed-stk-head b{flex:1}
+.ed-stk-sp .pill.loc{display:inline-flex;align-items:center;gap:4px}
+.ed-stk-sp .pill.loc svg{width:17px;height:17px}
+.ed-stk:not(.loc) .ed-loc-back,.ed-stk:not(.loc) .ed-loc,.ed-stk.loc .ed-stk-sp,.ed-stk.loc .ed-stk-em{display:none}
+.ed-loc-q{display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:14px;background:rgba(var(--fg),.1);margin-bottom:8px}
+.ed-loc-q svg{width:18px;height:18px;flex:none;color:var(--pink-soft)}
+.ed-stk .ed-loc-q input[type=text],.ed-stk .ed-loc-q input[type=text]:focus{flex:1;min-width:0;width:auto;height:100%;margin:0;border:0;border-radius:0;background:transparent;color:#fff;font:inherit;font-size:16px;outline:0;box-shadow:none;padding:0}
+.ed-loc-q:focus-within{box-shadow:0 0 0 2px rgba(255,79,154,.55)}
+.ed-loc-list{display:grid;gap:2px;min-height:120px}
+.ed-loc-it{display:flex;align-items:center;gap:12px;width:100%;padding:10px 6px;border-radius:12px;text-align:left;color:#fff}
+.ed-loc-it:active{background:rgba(var(--fg),.08)}
+.ed-loc-it svg{width:20px;height:20px;flex:none;color:var(--pink-soft)}
+.ed-loc-it span{min-width:0;display:grid;gap:2px}
+.ed-loc-it b{font-weight:400;font-family:var(--font-cute);font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ed-loc-it small{color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ed-loc-it.here b{color:var(--pink-soft)}
+.ed-loc-cap{margin:10px 6px 2px;font-size:12.5px;color:var(--muted)}
+.ed-loc-msg{margin:10px 6px;font-size:13.5px;color:var(--muted);line-height:1.5}
 .pk .pk-img{display:block;width:100%;height:100%;padding:0}
 .pk .pk-ed{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.72);display:grid;place-items:center;pointer-events:none}
 .pk .pk-ed svg{width:13px;height:13px}
@@ -833,6 +852,8 @@ input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):n
 .viewer .mention{color:#ffb3d4}
 .vw-men{display:inline-flex;gap:6px;margin-left:6px}
 .vw-men .mention{background:rgba(255,255,255,.18);color:#fff;padding:1px 8px;border-radius:999px;font-size:12.5px}
+.vw-men .mention.loc{display:inline-flex;align-items:center;gap:3px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vw-men .mention.loc svg{width:12px;height:12px;flex:none}
 .mention-pop{position:fixed;z-index:130;display:flex;gap:6px;padding:6px;border-radius:16px;background:var(--surface);border:.5px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.28);max-width:calc(100vw - 16px);overflow-x:auto}
 .mention-pop button{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:12px;white-space:nowrap}
 .mention-pop button:active{background:var(--field);transform:scale(.96)}
@@ -1181,7 +1202,8 @@ input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):n
   </div>
   <div class="ed-stk" id="ed-stk" hidden>
     <div class="ed-stk-in">
-      <div class="ed-stk-head"><b>스티커</b><button class="ed-ic sm" type="button" data-ed="stk-close" aria-label="스티커 닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+      <div class="ed-stk-head"><button class="ed-ic sm ed-loc-back" type="button" data-ed="loc-back" aria-label="스티커로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><b id="ed-stk-t">스티커</b><button class="ed-ic sm" type="button" data-ed="stk-close" aria-label="스티커 닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+      <div class="ed-loc"><label class="ed-loc-q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><input id="ed-loc-in" type="text" maxlength="40" placeholder="장소를 검색하거나 이름을 입력해요" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="장소 이름"></label><div class="ed-loc-list" id="ed-loc-list"></div></div>
       <div class="ed-stk-sp" id="ed-stk-sp"></div>
       <div class="ed-stk-em" id="ed-stk-em"></div>
     </div>
@@ -1456,7 +1478,7 @@ function buildIndex() {
   const photoDays = {};
   const addPhoto = (ms, o) => { if (!ms || !o.imageId) return; const k = keyFromMs(ms); (photoDays[k] = photoDays[k] || []).push(o); };
   for (const p of S.posts) (p.images || []).forEach((im, i) => addPhoto(p.createdAt, { imageId: im && im.id, author: p.author, createdAt: (p.createdAt || 0) + i, kind: 'post', ref: p.id, i, caption: p.caption || '', pcap: pcapText(im), n: (p.images || []).length }));
-  for (const x of S.stories) if (x.image) addPhoto(x.createdAt, { imageId: x.image.id, author: x.author, createdAt: x.createdAt, kind: 'story', ref: x.id });
+  for (const x of S.stories) if (x.image) addPhoto(x.createdAt, { imageId: x.image.id, author: x.author, createdAt: x.createdAt, kind: 'story', ref: x.id, place: x.place && x.place.name ? x.place : null });
   for (const k in photoDays) photoDays[k].sort((a, b) => a.createdAt - b.createdAt);
   const scomments = {}; for (const c of S.comments) if (c.storyId && !c.postId) (scomments[c.storyId] = scomments[c.storyId] || []).push(c);
   for (const k in scomments) scomments[k].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
@@ -2575,7 +2597,7 @@ async function deleteLetter(id) {
 function seenStories() { if (!S._seenStories) { try { S._seenStories = new Set(JSON.parse(localStorage.getItem('ours-seen-stories') || '[]')); } catch (e) { S._seenStories = new Set(); } } return S._seenStories; }
 function markStorySeen(id) { const s = seenStories(); if (s.has(id)) return; s.add(id); try { localStorage.setItem('ours-seen-stories', JSON.stringify([...s].slice(-400))); } catch (e) { /* ignore */ } }
 const activeStories = uid => S.stories.filter(x => x.author === uid && x.image && Date.now() - (x.createdAt || 0) < DAY_MS).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-const storyItem = x => ({ imageId: x.image.id, author: x.author, createdAt: x.createdAt, kind: 'story', ref: x.id, mentions: x.mentions || [] });
+const storyItem = x => ({ imageId: x.image.id, author: x.author, createdAt: x.createdAt, kind: 'story', ref: x.id, mentions: x.mentions || [], place: x.place && x.place.name ? x.place : null });
 function postItems(posts) {
   const out = [];
   for (const p of posts) (p.images || []).forEach((im, i) => { if (im && im.id) out.push({ imageId: im.id, author: p.author, createdAt: (p.createdAt || 0) + i, kind: 'post', ref: p.id, i, caption: p.caption || '', pcap: pcapText(im), n: (p.images || []).length }); });
@@ -2714,7 +2736,8 @@ const Viewer = {
     patch($('#vw-bars'), n <= 40 ? this.items.map((_, j) => `<i class="${j < this.i ? 'done' : j === this.i ? 'cur' : ''}"><b${j === this.i && !this.auto ? ' style="width:100%"' : ''}></b></i>`).join('') : `<span class="cnt">${this.i + 1} / ${n}</span>`);
     const when = it.kind === 'drawing' ? mdKo(it.date) : timeAgo(it.createdAt);
     const sx = it.kind === 'story' ? storyById(it.ref) : null, orig = sx && sx.sharedFrom ? storyById(sx.sharedFrom) : null;
-    const men = (it.mentions || []).length || orig ? `<span class="vw-men">${orig ? `<button type="button" class="mention" data-act="open-orig" data-id="${esc(orig.id)}">원본 보기</button>` : ''}${it.mentions.map(u => `<button type="button" class="mention" data-act="profile" data-uid="${esc(u)}">@${esc(nameOf(u))}</button>`).join('')}</span>` : '';
+    const plc = it.place ? `<button type="button" class="mention loc" data-act="open-place" aria-label="${esc(it.place.name)} 지도에서 보기">${ICON2.pin}${esc(it.place.name)}</button>` : '';
+    const men = (it.mentions || []).length || orig || plc ? `<span class="vw-men">${plc}${orig ? `<button type="button" class="mention" data-act="open-orig" data-id="${esc(orig.id)}">원본 보기</button>` : ''}${(it.mentions || []).map(u => `<button type="button" class="mention" data-act="profile" data-uid="${esc(u)}">@${esc(nameOf(u))}</button>`).join('')}</span>` : '';
     patch($('#vw-who'), `${avatar(it.author, 32)}<span style="min-width:0"><span class="nm">${esc(this.opts.title || nameOf(it.author))}</span> <small>${esc(this.opts.title ? nameOf(it.author) + ' · ' + when : when)}</small>${men}</span>`);
     let tools = '', foot = '';
     const own = it.author === S.myId && S.mode === 'live' && S.canWrite;
@@ -2838,7 +2861,8 @@ async function createStories() {
       const c = await photoBlob(picked[i], 1440);
       const up = await uploadAsset(c.blob, 'image/jpeg');
       const sh = picked[i].shared, men = [...new Set([...(edDirty(picked[i]) ? (picked[i].edit.items || []).flatMap(x => x.mention ? [x.mention] : (x.mentions || [])) : []), ...(sh && sh.author !== S.myId ? [sh.author] : [])])];
-      const ok = await write(() => S.db.collection('stories').add(Object.assign({ author: S.myId, image: { id: up.id, w: c.w, h: c.h }, createdAt: base + i }, men.length ? { mentions: men } : {}, sh ? { sharedFrom: sh.sid } : {})));
+      const plc = edDirty(picked[i]) && (picked[i].edit.items || []).find(x => x.kind === 'place' && x.place && x.place.name);
+      const ok = await write(() => S.db.collection('stories').add(Object.assign({ author: S.myId, image: { id: up.id, w: c.w, h: c.h }, createdAt: base + i }, men.length ? { mentions: men } : {}, sh ? { sharedFrom: sh.sid } : {}, plc ? { place: plc.place } : {})));
       if (!ok) { dropAsset(up.id); throw { code: '_handled' }; }
       done.push(up.id);
     }
@@ -2984,6 +3008,7 @@ function edLayout(ctx, st, it) {
     return { kind: 'ours', fs, font, w: ctx.measureText('ours').width + fs * .3, h: fs * 1.2 };
   }
   const fs = st.FW * .052, font = `${fs}px "Jua","Gowun Dodum",sans-serif`; ctx.font = font;
+  if (it.kind === 'place') { const tw = ctx.measureText(it.text).width, iw = fs * .95, gap = fs * .3; return { kind: 'place', fs, font, tw, iw, gap, w: tw + iw + gap + fs * 1.5, h: fs * 2 }; }
   return { kind: 'pill', fs, font, w: ctx.measureText(it.text).width + fs * 1.5, h: fs * 2 };
 }
 const ED_OUTLINE = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]].map(([x, y]) => `${x * 2.5}px ${y * 2.5}px 0 #000`).join(',') + ',0 0 4px #000';
@@ -3023,10 +3048,61 @@ function edItem(ctx, st, it, k) {
       else { const g = ctx.createLinearGradient(0, -L.h / 2, 0, L.h / 2); g.addColorStop(0, '#ff6dab'); g.addColorStop(1, '#ef3584'); ctx.fillStyle = g; }
       ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = blur(L.fs * .3); ctx.fill(); ctx.shadowBlur = 0;
     } else { ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = blur(L.fs * .25); }
-    ctx.font = L.font; ctx.fillStyle = sty === 0 ? '#ff4f9a' : '#fff'; ctx.fillText(it.text, 0, L.fs * .05);
+    ctx.font = L.font; ctx.fillStyle = sty === 0 ? '#ff4f9a' : '#fff';
+    if (L.kind === 'place') { const x0 = -L.w / 2 + L.fs * .75; edPin(ctx, x0 + L.iw / 2, L.fs * .03, L.iw * .4); ctx.fillText(it.text, x0 + L.iw + L.gap + L.tw / 2, L.fs * .05); }
+    else ctx.fillText(it.text, 0, L.fs * .05);
   }
   ctx.restore();
 }
+function edPin(ctx, cx, cy, r) { // 위치 핀 (현재 fillStyle로 채움)
+  const hy = cy - r * .5, d = r * 1.95, a = Math.acos(r / d);
+  ctx.beginPath(); ctx.moveTo(cx, hy + d); ctx.arc(cx, hy, r, Math.PI / 2 + a, Math.PI * 2.5 - a); ctx.closePath();
+  ctx.moveTo(cx + r * .42, hy); ctx.arc(cx, hy, r * .42, 0, Math.PI * 2, true); ctx.fill('evenodd');
+}
+/* 사진(JPEG) 속 촬영 위치(GPS) 읽기 */
+async function edGps(file) {
+  try {
+    if (!file || !/jpe?g/i.test(file.type || file.name || '')) return null;
+    const b = new DataView(await file.slice(0, 256 * 1024).arrayBuffer());
+    if (b.getUint16(0) !== 0xFFD8) return null;
+    let o = 2;
+    while (o + 10 < b.byteLength) {
+      const m = b.getUint16(o), len = b.getUint16(o + 2);
+      if (m === 0xFFE1 && b.getUint32(o + 4) === 0x45786966) return edGpsTiff(b, o + 10);
+      if ((m & 0xFF00) !== 0xFF00 || m === 0xFFDA) break;
+      o += 2 + len;
+    }
+  } catch (e) { /* 위치 정보 없음 */ }
+  return null;
+}
+function edGpsTiff(b, t) {
+  const le = b.getUint16(t) === 0x4949, u16 = o => b.getUint16(t + o, le), u32 = o => b.getUint32(t + o, le);
+  const ifd = (off, want) => { const n = u16(off), out = {}; for (let i = 0; i < n; i++) { const e = off + 2 + i * 12, tag = u16(e); if (want.includes(tag)) out[tag] = { cnt: u32(e + 4), val: e + 8 }; } return out; };
+  const gp = ifd(u32(4), [0x8825])[0x8825]; if (!gp) return null;
+  const g = ifd(u32(gp.val), [1, 2, 3, 4]);
+  const ref = x => x ? String.fromCharCode(b.getUint8(t + x.val)) : '';
+  const deg = x => { if (!x || x.cnt < 3) return NaN; const o = u32(x.val); let v = 0; for (let i = 0; i < 3; i++) { const dn = u32(o + i * 8 + 4); v += (dn ? u32(o + i * 8) / dn : 0) / Math.pow(60, i); } return v; };
+  let lat = deg(g[2]), lng = deg(g[4]);
+  if (!isFinite(lat) || !isFinite(lng) || (!lat && !lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  if (ref(g[1]) === 'S') lat = -lat; if (ref(g[3]) === 'W') lng = -lng;
+  return { lat, lng };
+}
+/* 장소 검색 (OpenStreetMap 기반 Photon, 키 없이 사용) */
+async function placeFetch(path, signal) {
+  const r = await fetch('https://photon.komoot.io/' + path, { signal }); if (!r.ok) throw new Error('place ' + r.status);
+  const j = await r.json(), seen = new Set(), out = [];
+  for (const f of j.features || []) {
+    const p = f.properties || {}, c = f.geometry && f.geometry.coordinates;
+    const name = p.name || [p.street, p.housenumber].filter(Boolean).join(' ') || p.district || p.locality || p.city;
+    if (!name || !c) continue;
+    const parts = [p.countrycode && p.countrycode !== 'KR' ? p.country : '', p.state, p.city, p.district || p.locality, p.street].filter(x => x && x !== name);
+    const sub = [...new Set(parts)].join(' '), key = name + '|' + sub;
+    if (seen.has(key)) continue; seen.add(key);
+    out.push({ name: name.slice(0, 30), sub, lat: Math.round(c[1] * 1e6) / 1e6, lng: Math.round(c[0] * 1e6) / 1e6 });
+  }
+  return out;
+}
+const placeMapUrl = pl => pl.lat != null && pl.lng != null ? `https://map.kakao.com/link/map/${encodeURIComponent(pl.name.replace(/,/g, ' '))},${pl.lat},${pl.lng}` : `https://map.kakao.com/link/search/${encodeURIComponent(pl.name)}`;
 function edStroke(ctx, s, k) {
   const p = s.p; if (!p || p.length < 2) return;
   ctx.save(); ctx.scale(k, k); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -3114,7 +3190,7 @@ function edReframe(st, fn) { // change frame size, keep drawings and stickers in
 }
 function edFontSpec(it) {
   if (it.type === 'text') return [(ED_FONTS[it.font] || ED_FONTS.jua)[0], it.text];
-  if (it.kind === 'pill') return ['Jua', it.text];
+  if (it.kind === 'pill' || it.kind === 'place') return ['Jua', it.text];
   if (it.kind === 'ours') return ['Grand Hotel', 'ours'];
   return null;
 }
@@ -3383,15 +3459,76 @@ const Ed = {
   },
   openStk() {
     if (!this.st) return;
-    this._stk = this.stickers();
-    patch($('#ed-stk-sp'), this._stk.map((s, i) => `<button type="button" data-ed="stk" data-i="${i}" class="${s.kind === 'ours' ? 'ours' : 'pill'}">${esc(s.text)}</button>`).join(''));
+    this._stk = this.stickers(); this.closeLoc();
+    patch($('#ed-stk-sp'), (this.st.mode === 'story' ? `<button type="button" data-ed="loc-open" class="pill loc">${ICON2.pin}위치</button>` : '') + this._stk.map((s, i) => `<button type="button" data-ed="stk" data-i="${i}" class="${s.kind === 'ours' ? 'ours' : 'pill'}">${esc(s.text)}</button>`).join(''));
     patch($('#ed-stk-em'), ED_EMOJI.map(e => `<button type="button" data-ed="emoji" data-e="${e}" aria-label="${e} 붙이기">${e}</button>`).join(''));
     $('#ed-stk').hidden = false;
   },
   addSticker(spec) {
     const st = this.st; if (!st) return;
-    this.change(() => st.items.push({ id: edRid(), type: 'sticker', kind: spec.kind, text: spec.text, style: 0, ...(spec.mention ? { mention: spec.mention } : {}), x: st.FW * (.5 + (Math.random() - .5) * .16), y: st.FH * (.45 + (Math.random() - .5) * .1), s: 1, rot: 0 }));
+    this.change(() => st.items.push({ id: edRid(), type: 'sticker', kind: spec.kind, text: spec.text, style: 0, ...(spec.mention ? { mention: spec.mention } : {}), ...(spec.place ? { place: spec.place } : {}), x: st.FW * (.5 + (Math.random() - .5) * .16), y: st.FH * (.45 + (Math.random() - .5) * .1), s: 1, rot: 0 }));
     $('#ed-stk').hidden = true; this.req(); edLoadFonts(st.items).then(() => this.req());
+  },
+  /* location sticker */
+  openLoc() {
+    const L = this.loc = { q: '', res: [], busy: false, err: '', near: [], nearLbl: '', nearBusy: false, nearErr: '', at: null };
+    $('#ed-stk').classList.add('loc'); $('#ed-stk-t').textContent = '위치'; $('#ed-loc-in').value = '';
+    this.renderLoc();
+    const p = this.list[this.i], use = g => { if (g && this.loc === L && !L.nearLbl) this.nearby(g, '사진 찍은 곳 근처'); };
+    if (p && p.file) { if (p.gps !== undefined) use(p.gps); else edGps(p.file).then(g => { p.gps = g; use(g); }); }
+  },
+  closeLoc() {
+    clearTimeout(this.locT); if (this.locAc) this.locAc.abort(); this.locAc = null; this.loc = null;
+    $('#ed-stk').classList.remove('loc'); $('#ed-stk-t').textContent = '스티커'; $('#ed-loc-in').blur();
+  },
+  nearby(g, lbl) {
+    const L = this.loc; if (!L) return;
+    Object.assign(L, { near: [], nearLbl: lbl, nearBusy: true, nearErr: '', at: g }); this.renderLoc();
+    placeFetch(`reverse?lat=${g.lat}&lon=${g.lng}&limit=10&radius=0.5`)
+      .then(r => { if (this.loc === L && L.at === g) L.near = r; })
+      .catch(() => { if (this.loc === L && L.at === g) L.nearErr = '근처 장소를 불러오지 못했어요. 장소 이름을 직접 입력해 주세요'; })
+      .finally(() => { if (this.loc === L && L.at === g) { L.nearBusy = false; this.renderLoc(); } });
+  },
+  locHere() {
+    const L = this.loc; if (!L) return;
+    if (!navigator.geolocation) { toast('이 기기에서는 위치를 쓸 수 없어요'); return; }
+    Object.assign(L, { near: [], nearLbl: '지금 위치 근처', nearBusy: true, nearErr: '' }); this.renderLoc();
+    navigator.geolocation.getCurrentPosition(pos => { if (this.loc === L) this.nearby({ lat: pos.coords.latitude, lng: pos.coords.longitude }, '지금 위치 근처'); },
+      err => { if (this.loc !== L) return; L.nearBusy = false; L.nearLbl = ''; this.renderLoc(); toast(err.code === 1 ? '설정에서 위치 권한을 허용해 주세요' : '지금 위치를 찾지 못했어요'); },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  },
+  locInput(v) {
+    const L = this.loc; if (!L) return;
+    const q = v.trim(); L.q = q; clearTimeout(this.locT); if (this.locAc) this.locAc.abort();
+    Object.assign(L, { res: [], err: '', busy: !!q }); this.renderLoc();
+    if (!q) return;
+    this.locT = setTimeout(() => {
+      const ac = this.locAc = new AbortController(), bias = L.at ? `&lat=${L.at.lat}&lon=${L.at.lng}` : '';
+      placeFetch(`api/?q=${encodeURIComponent(q)}&limit=8${bias}`, ac.signal)
+        .then(r => { if (this.loc === L && L.q === q) L.res = r; })
+        .catch(e => { if (e && e.name !== 'AbortError' && this.loc === L && L.q === q) L.err = '검색하지 못했어요. 위의 이름 그대로 붙일 수 있어요'; })
+        .finally(() => { if (this.loc === L && L.q === q) { L.busy = false; this.renderLoc(); } });
+    }, 400);
+  },
+  renderLoc() {
+    const L = this.loc; if (!L) return;
+    const opts = this._loc = [], msg = t => `<p class="ed-loc-msg">${esc(t)}</p>`;
+    const row = o => { opts.push(o); return `<button type="button" class="ed-loc-it" data-ed="loc-pick" data-i="${opts.length - 1}">${ICON2.pin}<span><b>${esc(o.name)}</b>${o.sub ? `<small>${esc(o.sub)}</small>` : ''}</span></button>`; };
+    let h = '';
+    if (L.q) {
+      h += row({ name: L.q.slice(0, 30), sub: '입력한 이름 그대로 붙이기', custom: true });
+      h += L.busy ? msg('찾는 중…') : L.err ? msg(L.err) : L.res.length ? L.res.map(row).join('') : msg('검색 결과가 없어요');
+    } else {
+      h += `<button type="button" class="ed-loc-it here" data-ed="loc-here"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="7.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22"/></svg><span><b>지금 내 위치 근처</b><small>위치 권한을 물어볼 수 있어요</small></span></button>`;
+      if (L.nearLbl) h += `<p class="ed-loc-cap">${esc(L.nearLbl)}</p>` + (L.nearBusy ? msg('찾는 중…') : L.nearErr ? msg(L.nearErr) : L.near.length ? L.near.map(row).join('') : msg('근처 장소를 찾지 못했어요'));
+      else h += msg('장소를 검색하거나, 우리만 아는 이름(예: 우리집)을 그대로 입력해도 돼요');
+    }
+    patch($('#ed-loc-list'), h);
+  },
+  pickLoc(i) {
+    const o = this._loc && this._loc[i]; if (!o) return;
+    this.closeLoc();
+    this.addSticker({ kind: 'place', text: o.name, place: o.custom || o.lat == null ? { name: o.name } : { name: o.name, lat: o.lat, lng: o.lng } });
   },
   /* fingers */
   pt(e) { const r = $('#ed-cv').getBoundingClientRect(), st = this.st; return { x: (e.clientX - r.left) / r.width * st.FW, y: (e.clientY - r.top) / r.height * st.FH, cx: e.clientX, cy: e.clientY }; },
@@ -3464,7 +3601,7 @@ const Ed = {
       if (hot) { this.st.items.splice(this.st.items.indexOf(g.it), 1); toast('지웠어요'); }
       else if (!this.moved && Date.now() - this.t0 < 400 && e.type === 'pointerup') {
         if (g.it.type === 'text') { this.end(); this.openText(g.it); return; }
-        if (g.it.kind === 'pill') g.it.style = ((g.it.style || 0) + 1) % 3;
+        if (g.it.kind === 'pill' || g.it.kind === 'place') g.it.style = ((g.it.style || 0) + 1) % 3;
       }
     }
     this.end(); this.req();
@@ -3514,11 +3651,16 @@ const Ed = {
         case 'stk': { const s = this._stk && this._stk[Number(t.dataset.i)]; if (s) this.addSticker(s); break; }
         case 'emoji': this.addSticker({ kind: 'emoji', text: t.dataset.e }); break;
         case 'stk-close': $('#ed-stk').hidden = true; break;
+        case 'loc-open': this.openLoc(); break;
+        case 'loc-back': this.closeLoc(); break;
+        case 'loc-here': this.locHere(); break;
+        case 'loc-pick': this.pickLoc(Number(t.dataset.i)); break;
       }
     });
     root.addEventListener('input', e => {
       const t = e.target;
       if (t.id === 'ed-ta') { this.fitTa(); return; }
+      if (t.id === 'ed-loc-in') { this.locInput(t.value); return; }
       const r = t.dataset && t.dataset.edRange; if (!r || !this.st) return;
       this.begin();
       const v = Number(t.value) / 100, out = t.parentElement.querySelector('output');
@@ -3528,10 +3670,11 @@ const Ed = {
       this.refilterSoon();
     });
     root.addEventListener('change', e => { if (e.target.dataset && e.target.dataset.edRange) this.end(); });
+    $('#ed-loc-in').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
     document.addEventListener('keydown', e => {
       if (!this.isOpen() || !$('#confirm').hidden) return;
       if (e.key === 'Escape') { e.preventDefault(); if (!$('#ed-type').hidden) this.closeText(); else if (!$('#ed-stk').hidden) $('#ed-stk').hidden = true; else this.cancel(); }
-      else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && $('#ed-type').hidden) { e.preventDefault(); this.undo(); }
+      else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && $('#ed-type').hidden && $('#ed-stk').hidden) { e.preventDefault(); this.undo(); }
     });
   }
 };
@@ -4913,6 +5056,7 @@ function bind() {
       case 'vw-share': { const it = Viewer.current(); if (it) { Viewer.paused = true; openSheet('share', { storyId: it.ref }); } break; }
       case 'vw-act': { const it = Viewer.current(); if (it) { Viewer.paused = true; openSheet('storyact', { storyId: it.ref }); } break; }
       case 'story-cmts': openSheet('comments', { storyId: id }); break;
+      case 'open-place': { const it = Viewer.current(); if (it && it.place) { Viewer.paused = true; window.open(placeMapUrl(it.place), '_blank', 'noopener'); } break; }
       case 'open-orig': { const o = storyById(id); if (o) { const items = (Date.now() - (o.createdAt || 0) < DAY_MS ? activeStories(o.author) : [o]).map(storyItem); Viewer.open(items, Math.max(0, items.findIndex(y => y.ref === o.id)), { auto: true }); } break; }
       case 'share-post': shareToPost(id); break;
       case 'share-story': shareToStory(id); break;
