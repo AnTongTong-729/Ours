@@ -1017,6 +1017,15 @@ input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):n
 .duo-bar{grid-column:1/-1}
 .ptr.ready{animation:ptrPop .32s cubic-bezier(.2,1.6,.35,1)}
 @keyframes ptrPop{0%{scale:1}45%{scale:1.32}100%{scale:1}}
+/* story event: 5 stories a day */
+.story-ev{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 10px;margin:0;padding:11px 14px;border-radius:16px;background:var(--surface);border:.5px solid var(--line);font-family:var(--font-cute);font-size:14.5px}
+.story-ev[hidden]{display:none}
+.story-ev .se-ic{font-size:22px;grid-row:span 2}
+.story-ev b{font-weight:400;color:var(--pink)}
+.story-ev small{display:block;font-family:var(--font-ui);font-size:12.5px;color:var(--muted);margin-top:2px}
+.story-ev .coin{width:15px;height:15px;vertical-align:-2px}
+.story-ev .se-bar{grid-column:2;height:6px;border-radius:3px;background:var(--field);overflow:hidden}
+.story-ev .se-bar i{display:block;height:100%;background:var(--candy);border-radius:3px;transition:width .4s}
 /* update 9: daily attendance */
 .att-card{display:flex;align-items:center;gap:12px;width:calc(100% - 32px);margin:8px 16px 2px;padding:12px 14px;border-radius:20px;background:var(--surface);border:.5px solid var(--line);text-align:left}
 .att-info{flex:1;min-width:0;display:grid;gap:7px}
@@ -1098,6 +1107,7 @@ input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):n
         <h2 class="view-title" id="new-title">새 게시물</h2>
         <div class="seg" role="tablist" aria-label="올릴 곳"><button type="button" role="tab" data-act="new-mode" data-mode="post" id="nm-post">게시물</button><button type="button" role="tab" data-act="new-mode" data-mode="story" id="nm-story">스토리</button></div>
         <p id="new-note" class="status" style="margin:0" hidden></p>
+        <p id="story-ev" class="story-ev" hidden></p>
         <label class="picker" id="picker" for="file-in">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="m21 15-5-5L5 21"/></svg>
           <span id="picker-text">사진 고르기</span>
@@ -1381,7 +1391,7 @@ const S = {
   myId: null, myName: '', idFallback: false, isOwner: false,
   canWrite: true, canWriteKnown: false,
   profiles: [], posts: [], likes: [], comments: [], reposts: [], answers: [], drawings: [],
-  stories: [], storyviews: [], storylikes: [], petbuys: [], dayq: [], attend: [], highlights: [], letters: [], letterbodies: [], plans: [], anniversaries: [], myquestions: [], settings: [], config: [],
+  stories: [], storyviews: [], storylikes: [], petbuys: [], dayq: [], attend: [], storybonus: [], highlights: [], letters: [], letterbodies: [], plans: [], anniversaries: [], myquestions: [], settings: [], config: [],
   newMode: 'post', calMonth: null, calSel: null, ltTab: 'in',
   loaded: {}, slow: false, error: null, pp: {},
   view: 'home', profileUid: null, profileTab: 'posts',
@@ -1975,6 +1985,7 @@ function renderNew() {
   const note = $('#new-note'); let msg = '';
   if (S.mode === 'live' && (!S.canWrite || !S.assets)) msg = '사진을 올릴 권한이 없어요. setup.sql에 내 이메일이 들어 있는지 확인해 주세요.';
   note.hidden = !msg; patch(note, esc(msg));
+  const ev = $('#story-ev'), evh = story && !msg ? storyEventHTML() : ''; ev.hidden = !evh; if (evh) patch(ev, evh);
   const cap = $('#cap-in'); if (cap.className !== hw(S.myId)) cap.className = hw(S.myId);
   renderPickCaps();
 }
@@ -2853,7 +2864,7 @@ async function createStories() {
   if (!guardWrite()) return;
   if (!S.assets) { toast(assetErrMsg({ code: 'not_granted' })); return; }
   const btn = $('#post-btn'), st = $('#new-status'); btn.disabled = true;
-  const done = [];
+  const done = [], before = myStoriesToday(), bonusBefore = storyBonusDone(); let own = 0;
   try {
     const base = Date.now();
     for (let i = 0; i < picked.length; i++) {
@@ -2864,10 +2875,13 @@ async function createStories() {
       const plc = edDirty(picked[i]) && (picked[i].edit.items || []).find(x => x.kind === 'place' && x.place && x.place.name);
       const ok = await write(() => S.db.collection('stories').add(Object.assign({ author: S.myId, image: { id: up.id, w: c.w, h: c.h }, createdAt: base + i }, men.length ? { mentions: men } : {}, sh ? { sharedFrom: sh.sid } : {}, plc ? { place: plc.place } : {})));
       if (!ok) { dropAsset(up.id); throw { code: '_handled' }; }
-      done.push(up.id);
+      done.push(up.id); if (!sh) own++;
     }
     picked.forEach(p => URL.revokeObjectURL(p.url)); picked.length = 0; renderPicked(); st.textContent = '';
-    toast('스토리를 올렸어요! 24시간 동안 보여요'); scrollPos.home = 0; S.newMode = 'post'; go('home');
+    const cnt = Math.max(before + own, myStoriesToday());
+    if (!bonusBefore && await maybeStoryBonus(cnt)) { Haptic.tap(); toast(`오늘 스토리 ${cnt}개 달성! 토끼 코인 ${STORY_BONUS}개를 받았어요 🪙`); }
+    else if (!bonusBefore && own && cnt < STORY_GOAL) toast(`스토리를 올렸어요! 오늘 ${cnt}/${STORY_GOAL}개 · ${STORY_GOAL - cnt}개 더 올리면 코인 ${STORY_BONUS}개 🪙`);
+    else toast('스토리를 올렸어요! 24시간 동안 보여요'); scrollPos.home = 0; S.newMode = 'post'; go('home');
   } catch (e) {
     st.textContent = '';
     if (!(e && e.code === '_handled')) toast(assetErrMsg(e));
@@ -4089,6 +4103,23 @@ function maybeAttendPop() { // 하루에 한 번, 앱을 열면 출석판이 먼
   try { if (localStorage.getItem(k) === t) return; localStorage.setItem(k, t); } catch (e) { return; }
   if (!attState().today) openSheet('attend');
 }
+/* ---------- 스토리 이벤트: 하루에 스토리 5개(직접 올린 것, 공유 제외)를 올리면 2코인 ---------- */
+const STORY_GOAL = 5, STORY_BONUS = 2;
+const storyBonusCoins = () => S.storybonus.reduce((a, b) => a + (Number(b && b.coins) || 0), 0);
+const storyBonusDone = (t = todayKey()) => S.storybonus.some(b => b && b.uid === S.myId && b.date === t);
+const myStoriesToday = (t = todayKey()) => S.stories.filter(x => x && x.author === S.myId && !x.sharedFrom && keyFromMs(x.createdAt || 0) === t).length;
+function storyEventHTML() {
+  if (S.mode !== 'live' || !S.canWrite || !S.myId || !S.loaded.storybonus || !S.loaded.stories) return '';
+  if (storyBonusDone()) return `<span class="se-ic">🐰</span><span>오늘 스토리 이벤트 완료! ${COIN}${STORY_BONUS}코인을 받았어요</span>`;
+  const n = Math.min(myStoriesToday(), STORY_GOAL);
+  return `<span class="se-ic">🐰</span><span>스토리 이벤트 · 오늘 <b>${n}/${STORY_GOAL}</b>개<small>하루에 ${STORY_GOAL}개 올리면 ${COIN}${STORY_BONUS}코인</small></span><span class="se-bar"><i style="width:${n / STORY_GOAL * 100}%"></i></span>`;
+}
+async function maybeStoryBonus(count) { // count: 오늘 직접 올린 스토리 수
+  const t = todayKey();
+  if (count < STORY_GOAL || storyBonusDone(t)) return false;
+  const ok = await write(() => S.db.doc('storybonus/' + t + '__' + safeKey(S.myId)).set({ date: t, uid: S.myId, count, coins: STORY_BONUS, createdAt: Date.now() }));
+  return !!ok;
+}
 /* ---------- 썸원 기록 가져오기 ----------
    채팅으로 받은 someone-import.json(질문·답, 그림)을 골라서 날짜에 맞게 넣어요.
    가져온 기록에는 src: 'someone'이 붙어서 토끼 성장·코인·소식·알림에는 안 쳐요. */
@@ -4474,7 +4505,7 @@ function bindPullRefresh() {
     if (!navigator.vibrate) Haptic.tap(); busy = true;
     P.el.style.transition = `transform .35s ${SPRING}`; P.el.style.transform = 'translate3d(0,56px,0)';
     ptr.style.transition = `transform .35s ${SPRING}`; ptr.style.transform = 'translate3d(-50%,0,0) scale(1)'; ptr.style.opacity = 1; ptr.classList.add('spin');
-    const B = window.OursBackend, cols = ['posts', 'stories', 'comments', 'likes', 'reposts', 'storyviews', 'storylikes', 'answers', 'drawings', 'letters', 'letterbodies', 'plans', 'petbuys', 'settings', 'dayq', 'attend'];
+    const B = window.OursBackend, cols = ['posts', 'stories', 'comments', 'likes', 'reposts', 'storyviews', 'storylikes', 'answers', 'drawings', 'letters', 'letterbodies', 'plans', 'petbuys', 'settings', 'dayq', 'attend', 'storybonus'];
     try { await Promise.all([sleep(650), B && B.refresh && S.mode === 'live' ? Promise.all(cols.map(c => B.refresh(c))) : null]); } catch (e) { /* the realtime feed keeps going anyway */ }
     busy = false; render(); settle(P.el);
   };
@@ -4595,7 +4626,7 @@ function petDone() {
 const petStageOf = n => n >= PET_NEED[2] ? 2 : n >= PET_NEED[1] ? 1 : 0;
 const petStage = () => petStageOf(petDone());
 const ownDrawings = () => S.drawings.filter(d => d && d.src !== 'someone'); // 이 앱에서 직접 그린 그림만
-function petCoins() { const spent = S.petbuys.reduce((a, b) => a + (Number(b.cost) || 0), 0); return Math.max(0, ownDrawings().length + attendCoins() - spent); }
+function petCoins() { const spent = S.petbuys.reduce((a, b) => a + (Number(b.cost) || 0), 0); return Math.max(0, ownDrawings().length + attendCoins() + storyBonusCoins() - spent); }
 const petOwned = id => (PET_BY[id] && PET_BY[id].price === 0) || S.petbuys.some(b => b.id === id || b.item === id);
 const COIN = '<svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#ffd25e" stroke="#e8a51f" stroke-width="1.6"/><circle cx="12" cy="12" r="7" fill="none" stroke="#f3b93a" stroke-width="1.2"/><path d="M12 16.6s-3.6-2.1-4.4-4.4c-.6-1.6.4-3.1 2-3.1 1 0 1.7.6 2.4 1.5.7-.9 1.4-1.5 2.4-1.5 1.6 0 2.6 1.5 2 3.1-.8 2.3-4.4 4.4-4.4 4.4z" fill="#e8971a"/></svg>';
 const eul = w => hasBatchim(w) ? '을' : '를';
@@ -4757,7 +4788,7 @@ function renderPet() {
   h += `<div class="pet-room" id="pet-room">${roomSVG(cfg, st)}<div class="pet-say" id="pet-say" hidden></div></div>`;
   h += `<div class="pet-stage"><div class="ps-row"><b>${cfg.fur === 'dragon' ? '드래곤 ' : ''}${PET_STAGE[st]}</b><span>${[0, 1, 2].map(i => `<i class="${i <= st ? 'on' : ''}">${PET_STAGE[i]}</i>`).join('')}</span></div><span class="pet-bar"><i style="width:${pct.toFixed(1)}%"></i></span>
     <p>${next ? `둘 다 답한 질문 <b>${n}개</b> · ${PET_STAGE[st + 1]}까지 <b>${next - n}개</b> 남았어요` : `다 자랐어요! 둘 다 답한 질문 <b>${n}개</b>`}${sealed ? ` · 토끼캡슐 편지 ${sealed}통이 기다리고 있어요` : ''}</p>
-    <p class="muted">그림 1장 ${COIN}1코인 · 매일 출석 ${COIN}1코인 (7일째 ${COIN}3코인) · 지금까지 그린 그림 ${ownDrawings().length}장</p></div>`;
+    <p class="muted">그림 1장 ${COIN}1코인 · 매일 출석 ${COIN}1코인 (7일째 ${COIN}3코인) · 하루 스토리 ${STORY_GOAL}개 ${COIN}${STORY_BONUS}코인 · 지금까지 그린 그림 ${ownDrawings().length}장</p></div>`;
   h += `<div class="seg pet-shop-tabs" role="tablist">${[['skin', '스킨'], ['wear', '옷·소품'], ['room', '방 꾸미기'], ['house', '집']].map(([k, nm]) => `<button type="button" role="tab" class="${tab === k ? 'on' : ''}" aria-selected="${tab === k}" data-act="pet-tab" data-k="${k}">${nm}</button>`).join('')}</div>`;
   const list = PET_ITEMS.filter(x => x.cat === tab);
   h += `<div class="pet-grid">${list.map(it => {
@@ -5249,7 +5280,7 @@ async function boot() {
   sub('answers', db.collection('answers').orderBy('createdAt', 'desc').limit(1000));
   sub('drawings', db.collection('drawings').orderBy('createdAt', 'desc').limit(500));
   sub('stories', db.collection('stories').orderBy('createdAt', 'desc').limit(500));
-  for (const c of ['highlights', 'letters', 'letterbodies', 'plans', 'anniversaries', 'myquestions', 'settings', 'config', 'storyviews', 'storylikes', 'petbuys', 'dayq', 'attend']) sub(c, db.collection(c));
+  for (const c of ['highlights', 'letters', 'letterbodies', 'plans', 'anniversaries', 'myquestions', 'settings', 'config', 'storyviews', 'storylikes', 'petbuys', 'dayq', 'attend', 'storybonus']) sub(c, db.collection(c));
   refreshPeople(); render();
   Push.init();
 }
