@@ -2868,7 +2868,7 @@ async function createStories() {
   if (!guardWrite()) return;
   if (!S.assets) { toast(assetErrMsg({ code: 'not_granted' })); return; }
   const btn = $('#post-btn'), st = $('#new-status'); btn.disabled = true;
-  const done = [], before = myStoriesToday(), bonusBefore = storyBonusDone(); let own = 0;
+  const done = [], before = myStoriesToday(), bonusBefore = storyBonusDone(), prevMine = activeStories(S.myId).map(x => x.id); let own = 0;
   try {
     const base = Date.now();
     for (let i = 0; i < picked.length; i++) {
@@ -2882,6 +2882,7 @@ async function createStories() {
       done.push(up.id); if (!sh) own++;
     }
     picked.forEach(p => URL.revokeObjectURL(p.url)); picked.length = 0; renderPicked(); st.textContent = '';
+    prevMine.forEach(markStorySeen); // 내 스토리를 누르면 방금 올린 스토리부터 보이게
     const cnt = Math.max(before + own, myStoriesToday());
     if (!bonusBefore && await maybeStoryBonus(cnt)) { Haptic.tap(); toast(`오늘 스토리 ${cnt}개 달성! 토끼 코인 ${STORY_BONUS}개를 받았어요 🪙`); }
     else if (!bonusBefore && own && cnt < STORY_GOAL) toast(`스토리를 올렸어요! 오늘 ${cnt}/${STORY_GOAL}개 · ${STORY_GOAL - cnt}개 더 올리면 코인 ${STORY_BONUS}개 🪙`);
