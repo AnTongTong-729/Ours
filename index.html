@@ -982,6 +982,7 @@ input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):n
 /* update 8: story ring that pops, drawings replay side by side */
 .av.sring:not(.seen){background:linear-gradient(135deg,#ffffff 0%,#ffe1ee 50%,#ffffff 100%);padding:3px;box-shadow:0 0 12px rgba(255,79,154,.55)}
 .av.sring:not(.seen) .av-in{border-width:2.5px}
+:root[data-theme=light] .av.sring:not(.seen){background:linear-gradient(135deg,#ff2f87 0%,#ff6fae 45%,#ffb8d6 100%);box-shadow:0 0 12px rgba(255,47,135,.45)}
 .dimg.has-rp{position:relative}
 .dimg .dcv{position:absolute;inset:0;width:100%;height:100%;background:#fff;opacity:0;transition:opacity .25s;pointer-events:none}
 .dimg.has-rp.playing .dcv{opacity:1}
@@ -3346,6 +3347,15 @@ const Ed = {
     else { ta.style.background = 'transparent'; ta.style.color = d.color; ta.style.textShadow = '0 1px 6px rgba(0,0,0,.5)'; }
     this.fitTa();
   },
+  txtAct(t) { // 글자 모양 버튼: 키보드를 내리지 않고 바로 적용
+    const d = this.tDraft, a = t.dataset.ed;
+    if (a === 'txt-font') d.font = t.dataset.font;
+    else if (a === 'txt-color') d.color = t.dataset.c;
+    else if (a === 'txt-style') d.bg = (d.bg + 1) % 4;
+    else return;
+    this.renderType();
+    const ta = $('#ed-ta'); if (document.activeElement !== ta) ta.focus({ preventScroll: true });
+  },
   fitTa() { const ta = $('#ed-ta'); ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; },
   closeText() {
     if ($('#ed-type').hidden) return;
@@ -3467,6 +3477,16 @@ const Ed = {
     cv.addEventListener('pointerup', e => this.up(e));
     cv.addEventListener('pointercancel', e => this.up(e));
     if (window.ResizeObserver) new ResizeObserver(() => this.size()).observe($('#ed-stage')); else window.addEventListener('resize', () => this.size());
+    // 글자 입력 중 글꼴·색·배경 버튼을 눌러도 입력창 포커스가 빠지지 않게(키보드가 내려갔다 올라오는 깜빡임 방지)
+    const ty = $('#ed-type'), txtBtn = e => { const b = e.target.closest && e.target.closest('[data-ed]'); return b && /^txt-(font|color|style)$/.test(b.dataset.ed) ? b : null; };
+    let tp = null;
+    ty.addEventListener('mousedown', e => { if (txtBtn(e)) e.preventDefault(); });
+    ty.addEventListener('touchstart', e => { const b = txtBtn(e), p = e.touches[0]; tp = b && p ? { b, x: p.clientX, y: p.clientY } : null; }, { passive: true });
+    ty.addEventListener('touchend', e => {
+      const b = txtBtn(e), p = e.changedTouches[0], s = tp; tp = null;
+      if (!b || !s || s.b !== b || !p || Math.abs(p.clientX - s.x) > 10 || Math.abs(p.clientY - s.y) > 10) return;
+      e.preventDefault(); this.txtAct(b);
+    }, { passive: false });
     root.addEventListener('click', e => {
       const t = e.target.closest('[data-ed]');
       if (!t) { if (e.target.id === 'ed-type' || e.target.classList.contains('ed-type-mid')) this.closeText(); if (e.target.id === 'ed-stk') $('#ed-stk').hidden = true; return; }
@@ -3490,9 +3510,7 @@ const Ed = {
         case 'pen-c': this.pen.c = t.dataset.c; this.renderPanel(); break;
         case 'pen-clear': if (st && st.strokes.length) { this.change(() => { st.strokes = []; }); this.req(); } break;
         case 'txt-done': this.closeText(); break;
-        case 'txt-font': this.tDraft.font = t.dataset.font; this.renderType(); $('#ed-ta').focus(); break;
-        case 'txt-color': this.tDraft.color = t.dataset.c; this.renderType(); $('#ed-ta').focus(); break;
-        case 'txt-style': this.tDraft.bg = (this.tDraft.bg + 1) % 4; this.renderType(); $('#ed-ta').focus(); break;
+        case 'txt-font': case 'txt-color': case 'txt-style': this.txtAct(t); break;
         case 'stk': { const s = this._stk && this._stk[Number(t.dataset.i)]; if (s) this.addSticker(s); break; }
         case 'emoji': this.addSticker({ kind: 'emoji', text: t.dataset.e }); break;
         case 'stk-close': $('#ed-stk').hidden = true; break;
