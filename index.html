@@ -1239,6 +1239,9 @@ body.st-focus #v-study{padding-top:env(safe-area-inset-top,0px)}
 .st-guide b{font-weight:400;color:var(--pink)}
 .sheet-studyapps .sh-body{display:flex;flex-direction:column;gap:12px}
 .sheet-studyapps .sh-body > *{flex-shrink:0}
+.sh-acts{display:flex;align-items:center;gap:2px}
+.sh-save{height:34px;padding:0 16px;border-radius:999px;background:var(--candy);color:#fff;font-family:var(--font-cute);font-size:15px;box-shadow:var(--candy-hi)}
+.sh-save:active{filter:brightness(.94)}
 .st-away{display:grid;gap:10px;text-align:center;padding:4px 0 6px}
 .st-away-ic{font-size:44px}
 .st-away-t{margin:0;font-family:var(--font-cute);font-size:21px}
@@ -2366,7 +2369,7 @@ function openSheet(type, args = {}) {
   else if (type === 'someone') h = HEAD('썸원 기록 가져오기') + `<div class="sh-body" id="sh-list"></div>`;
   else if (type === 'attend') h = HEAD('출석 체크') + `<div class="sh-body" id="sh-list"></div>`;
   else if (type === 'replay') h = HEAD('그리는 과정') + `<div class="sh-body" id="sh-list"></div>`;
-  else if (type === 'studycat') h = HEAD(args.id ? '카테고리 고치기' : '새 카테고리') + `<div class="sh-body">${stCatSheetHTML(args.id ? catById(args.id) : null)}</div>`;
+  else if (type === 'studycat') h = `<div class="sh-grab"></div><div class="sh-head"><h2>${args.id ? '카테고리 고치기' : '새 카테고리'}</h2><span class="sh-acts"><button class="sh-save" type="submit" form="stc-form">${args.id ? '저장' : '만들기'}</button><button class="ic" type="button" data-act="close" aria-label="닫기">${ICON.close}</button></span></div>` + `<div class="sh-body">${stCatSheetHTML(args.id ? catById(args.id) : null)}</div>`;
   else if (type === 'studyapps') h = HEAD('공부 중 허용 앱') + `<div class="sh-body" id="sh-list"></div>`;
   else if (type === 'studyaway') h = `<div class="sh-grab"></div><div class="sh-body">${stAwaySheetHTML(args)}</div>`;
   else if (type === 'postedit') { const pe = IDX.posts[args.postId]; h = HEAD('게시물 고치기') + `<div class="sh-body">${pe ? postEditHTML(pe) : '<p class="empty sm">지워진 게시물이에요.</p>'}</div>`; }
@@ -4789,7 +4792,7 @@ function stDayStrip(people, key, who) { // 하루: 언제 공부했는지 0시~2
 /* ---------- 시트: 카테고리, 허용 앱, 자리 비움 ---------- */
 function stCatSheetHTML(c) {
   const used = new Set(catsOf().map(x => mod(Number(x.color) || 0, 8))), color = c ? mod(Number(c.color) || 0, 8) : ([0, 1, 2, 3, 4, 5, 6, 7].find(i => !used.has(i)) ?? catsOf().length % 8), emoji = c ? c.emoji || '📘' : '📘';
-  return `<form class="form" id="stc-form" data-id="${c ? esc(c.id) : ''}"><label class="lbl" for="stc-name">이름</label><input type="text" id="stc-name" maxlength="16" autocomplete="off" placeholder="예: 일본어, 파이썬" value="${c ? esc(c.name) : ''}">
+  return `<form class="form" id="stc-form" data-id="${c ? esc(c.id) : ''}"><label class="lbl" for="stc-name">이름</label><input type="text" id="stc-name" maxlength="16" autocomplete="off" enterkeyhint="done" placeholder="예: 일본어, 파이썬" value="${c ? esc(c.name) : ''}">
     <span class="lbl">아이콘</span><div class="st-pick" role="radiogroup">${ST_EMOJI.map(e => `<button type="button" role="radio" class="st-em${e === emoji ? ' on' : ''}" aria-checked="${e === emoji}" data-act="stc-emoji" data-k="${e}">${e}</button>`).join('')}</div><input type="hidden" id="stc-emoji" value="${esc(emoji)}">
     <span class="lbl">색</span><div class="st-pick" role="radiogroup">${ST_COLORS.map((x, i) => `<button type="button" role="radio" class="st-sw${i === color ? ' on' : ''}" aria-checked="${i === color}" aria-label="${x[2]}" data-act="stc-color" data-k="${i}" style="--cc:${stColor(i)}"></button>`).join('')}</div><input type="hidden" id="stc-color" value="${color}">
     <button class="btn primary block" type="submit">${c ? '저장' : '만들기'}</button>${c ? `<button class="btn ghost block" type="button" data-act="stc-del" data-id="${esc(c.id)}">카테고리 지우기</button><p class="hint">지워도 지금까지 공부한 기록은 리포트에 남아요.</p>` : ''}</form>`;
@@ -4800,7 +4803,7 @@ function stAppsSheetHTML() {
   h += `<div class="set-group">${apps.length ? apps.map((a, i) => `<div class="set-row"><span class="grow"><b style="font-weight:400">${esc(a.name)}</b><small>${esc(a.url)}</small></span><button class="ic sm" type="button" data-act="st-app-del" data-i="${i}" aria-label="${esc(a.name)} 빼기">${ICON.close}</button></div>`).join('') : '<div class="set-row"><span class="grow muted" style="font-size:14px">아직 허용한 앱이 없어요</span></div>'}</div>`;
   const left = ST_APPS.filter(([n]) => !apps.some(a => a.name === n));
   if (left.length) h += `<span class="lbl">눌러서 추가</span><div class="st-pick">${left.map(([n, u]) => `<button type="button" class="chip" data-act="st-app-add" data-n="${esc(n)}" data-u="${esc(u)}">+ ${esc(n)}</button>`).join('')}</div>`;
-  h += `<form class="form" id="sta-form"><span class="lbl">직접 추가</span><input type="text" id="sta-name" maxlength="20" placeholder="앱 이름 (예: 안키)" autocomplete="off"><input type="text" id="sta-url" maxlength="300" placeholder="앱 주소 (예: anki:// 또는 https://…)" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn ghost block" type="submit">${ICON.plus}추가</button></form>`;
+  h += `<form class="form" id="sta-form"><span class="lbl">직접 추가</span><input type="text" id="sta-name" maxlength="20" placeholder="앱 이름 (예: 안키)" autocomplete="off" enterkeyhint="next"><input type="text" id="sta-url" maxlength="300" enterkeyhint="done" placeholder="앱 주소 (예: anki:// 또는 https://…)" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn ghost block" type="submit">${ICON.plus}추가</button></form>`;
   h += `<div class="set-group" style="margin-top:6px"><label class="set-row tgl"><span class="grow">딴짓 확인<small>허용 앱이 아닌 곳에 30초 넘게 다녀오면, 돌아왔을 때 그 시간을 뺄지 물어봐요</small></span><input type="checkbox" data-lpref="studyAway" ${lpref('studyAway', true) ? 'checked' : ''} aria-label="딴짓 확인"></label>${'mediaSession' in navigator ? `<label class="set-row tgl"><span class="grow">잠금화면에 공부 시간<small>재생 중인 음악 자리에 공부 시간이 떠요. 다른 앱 음악은 멈출 수 있어요</small></span><input type="checkbox" data-lpref="studyLock" ${lpref('studyLock', true) ? 'checked' : ''} aria-label="잠금화면에 공부 시간"></label>` : ''}</div>`;
   h += `<details class="st-guide"${ios ? ' open' : ''}><summary>다른 앱을 진짜로 잠그려면 (아이폰)</summary><p>ours는 웹앱이라 휴대폰의 다른 앱을 직접 잠글 수는 없어요. 아이폰 기능을 같이 쓰면 돼요.</p><ol><li><b>허용한 앱만 쓰기:</b> 설정 → 스크린 타임 → <b>항상 허용</b>에 ours와 위 허용 앱을 넣어 두고, 공부할 때 스크린 타임의 <b>다운타임</b>을 켜요. 다운타임 동안엔 항상 허용한 앱만 열려요.</li><li><b>ours만 쓰기:</b> 설정 → 손쉬운 사용 → <b>사용법 유도</b>를 켜고, 공부 화면에서 측면 버튼을 세 번 눌러 시작해요. 끝낼 때도 세 번 누르고 암호를 넣어요.</li></ol></details>`;
   return h;
@@ -5990,6 +5993,7 @@ function bind() {
     else if (e.target.id === 'hl-form') saveHighlight(e.target);
     else if (e.target.id === 'stc-form') saveStudyCat(e.target);
     else if (e.target.id === 'sta-form') {
+      if (document.activeElement && document.activeElement.id === 'sta-name' && !$('#sta-url').value.trim()) { $('#sta-url').focus(); return; }
       const n = $('#sta-name').value.trim().slice(0, 20); let u = $('#sta-url').value.trim();
       if (!n || !u) { toast('앱 이름과 주소를 적어 주세요'); return; }
       if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = /^[\w-]+(\.[\w-]+)+/.test(u) ? 'https://' + u : u + '://';
