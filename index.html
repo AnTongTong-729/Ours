@@ -1066,7 +1066,7 @@ input:not(.hw):not([type=range]):not([type=checkbox]),select,textarea:not(.hw):n
 .att-partner{display:flex;align-items:center;gap:8px;margin:0;font-size:13.5px;color:var(--muted)}
 /* study time: 공부시간 */
 .study-card{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;width:calc(100% - 32px);margin:8px 16px 2px;padding:10px 14px 10px 10px;border-radius:22px;background:radial-gradient(80% 120% at 0% 100%,rgba(107,139,224,.14),transparent 60%),var(--surface);border:.5px solid var(--line);text-align:left}
-.stc-art{width:96px;height:62px;border-radius:14px;overflow:hidden;display:block}
+.stc-art{width:96px;height:62px;border-radius:14px;overflow:hidden;display:block;border:.5px solid var(--line);background:var(--sc-bg)}
 .stc-art .sc{width:100%;height:100%;display:block}
 .stc-info{min-width:0;display:grid;gap:5px}
 .stc-info > b{font-family:var(--font-cute);font-weight:400;font-size:16px}
@@ -1083,7 +1083,10 @@ body.st-focus main{padding-bottom:env(safe-area-inset-bottom,0px)}
 body.st-focus #v-study{padding-top:env(safe-area-inset-top,0px)}
 .st-wrap{padding:6px 16px calc(96px + env(safe-area-inset-bottom,0px));display:grid;gap:12px;align-content:start}
 .st-wrap .pet-top{margin-bottom:-2px}
-.st-scene{border-radius:22px;overflow:hidden;border:.5px solid var(--line);aspect-ratio:360/230;background:#ffeedd}
+:root{--sc-bg:#000;--sc-fg:#fff}
+:root[data-theme=light]{--sc-bg:#fff;--sc-fg:#000}
+.sc{color:var(--sc-fg)}
+.st-scene{border-radius:22px;overflow:hidden;border:.5px solid var(--line);aspect-ratio:360/230;background:var(--sc-bg)}
 .st-scene .sc{display:block;width:100%;height:100%}
 .st-scene.cheer{animation:scCheer .8s cubic-bezier(.2,1.6,.35,1)}
 @keyframes scCheer{40%{transform:scale(1.04) rotate(-1deg)}}
@@ -1091,16 +1094,11 @@ body.st-focus #v-study{padding-top:env(safe-area-inset-top,0px)}
 @keyframes scPen{from{transform:rotate(-7deg)}to{transform:rotate(9deg) translate(1px,-1px)}}
 .sc .sc-run .sc-head{transform-box:fill-box;transform-origin:50% 100%;animation:scNod 3.2s ease-in-out infinite}
 @keyframes scNod{50%{transform:rotate(-2.5deg) translateY(1px)}}
-.sc .sc-eye{transform-box:fill-box;transform-origin:center;animation:scBlink 4.2s infinite}
-@keyframes scBlink{0%,93%,100%{transform:scaleY(1)}95%{transform:scaleY(.12)}}
-.sc .sc-glow,.sc .sc-screen{animation:scGlow 2.6s ease-in-out infinite}
-@keyframes scGlow{50%{opacity:.08}}
 .sc .sc-idle .sc-head{transform-box:fill-box;transform-origin:50% 100%;transform:rotate(6deg) translateY(4px)}
 .sc .sc-z text{animation:scZ 2.7s ease-in-out infinite;opacity:0}
 .sc .sc-z text:nth-child(2){animation-delay:.6s}
 .sc .sc-z text:nth-child(3){animation-delay:1.2s}
 @keyframes scZ{0%{opacity:0;transform:translateY(6px)}30%,70%{opacity:1}100%{opacity:0;transform:translateY(-6px)}}
-.sc .sc-cup{animation:scZ 3s ease-in-out infinite}
 .sc.mini *{animation:none!important}
 @media (prefers-reduced-motion:reduce){.sc *{animation:none!important}}
 .st-look{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 14px;border-radius:16px;background:var(--surface);border:.5px solid var(--line);font-family:var(--font-cute);font-size:14.5px}
@@ -4388,53 +4386,33 @@ const stPartner = () => (partners()[0] || {}).uid || null;
 const myApps = () => (stPrefs().apps || []).filter(a => a && a.name && a.url);
 
 /* ---------- 그림: 책상에서 패드 보며 공부하는 우리 ---------- */
-function stFace(cx, state) {
-  if (state === 'idle') return `<path d="M${cx - 14} 81q4 3 8 0M${cx + 6} 81q4 3 8 0" stroke="#3a2a24" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="${cx}" cy="93" rx="2.4" ry="2" fill="#c4626e"/>`;
-  return `<g class="sc-eye"><ellipse cx="${cx - 10}" cy="83" rx="2.6" ry="3" fill="#3a2a24"/><ellipse cx="${cx + 10}" cy="83" rx="2.6" ry="3" fill="#3a2a24"/></g><path d="M${cx - 4} 92q4 ${state === 'run' ? 2.5 : 3.5} 8 0" stroke="#c4626e" stroke-width="2" fill="none" stroke-linecap="round"/>`;
-}
-function stPerson(look, state, cx) {
-  const skin = '#ffdcc2', hair = look === 'girl' ? '#7a4a32' : '#3a2a24', shirt = look === 'girl' ? '#ff9cc6' : '#6b8be0', shirt2 = look === 'girl' ? '#ff7fb3' : '#5675cc';
-  let g = `<g class="sc-p sc-${state}">`;
-  if (look === 'girl') g += `<path d="M${cx - 31} 80Q${cx - 33} 44 ${cx} 44Q${cx + 33} 44 ${cx + 31} 80L${cx + 36} 134Q${cx} 142 ${cx - 36} 134Z" fill="${hair}"/>`;
-  g += `<path d="M${cx - 40} 152Q${cx - 38} 110 ${cx} 106Q${cx + 38} 110 ${cx + 40} 152Z" fill="${shirt}"/><path d="M${cx - 9} 108L${cx} 120L${cx + 9} 108" fill="none" stroke="${shirt2}" stroke-width="3" stroke-linecap="round"/>`;
-  g += `<g class="sc-head"><circle cx="${cx - 26}" cy="82" r="5" fill="${skin}"/><circle cx="${cx + 26}" cy="82" r="5" fill="${skin}"/><circle cx="${cx}" cy="78" r="26" fill="${skin}"/>`;
-  g += look === 'girl'
-    ? `<path d="M${cx - 27} 76Q${cx - 27} 50 ${cx} 50Q${cx + 27} 50 ${cx + 27} 76Q${cx + 16} 61 ${cx + 2} 64Q${cx - 12} 60 ${cx - 27} 76Z" fill="${hair}"/><path d="M${cx + 14} 55l7-5 1 8zM${cx + 22} 50l7 2-5 6z" fill="#ff4f9a"/><circle cx="${cx + 21}" cy="54" r="2.4" fill="#ff86b8"/>`
-    : `<path d="M${cx - 27} 78Q${cx - 29} 47 ${cx} 46Q${cx + 29} 47 ${cx + 27} 78Q${cx + 21} 62 ${cx + 6} 60Q${cx - 8} 66 ${cx - 20} 61Q${cx - 24} 68 ${cx - 27} 78Z" fill="${hair}"/>`;
-  g += `<ellipse cx="${cx - 16}" cy="90" rx="5" ry="3" fill="#ff8fab" opacity=".5"/><ellipse cx="${cx + 16}" cy="90" rx="5" ry="3" fill="#ff8fab" opacity=".5"/>${stFace(cx, state)}`;
-  if (state === 'run') g += `<ellipse class="sc-glow" cx="${cx}" cy="96" rx="22" ry="14" fill="#bfe6ff" opacity=".22"/>`;
+function stPerson(look, state, cx, fg, bgs) {
+  // 얼굴·옷 없이 실루엣만: 남자는 짧은 머리라 목이 보이고, 여자는 긴 머리가 어깨까지 내려오고 리본이 있어요
+  let g = `<g class="sc-p sc-${state}"><path d="M${cx - 38} 150Q${cx - 37} 113 ${cx} 109Q${cx + 37} 113 ${cx + 38} 150Z" fill="${fg}"/><g class="sc-head">`;
+  if (look === 'girl') g += `<path d="M${cx - 25} 80Q${cx - 27} 53 ${cx} 53Q${cx + 27} 53 ${cx + 25} 80L${cx + 28} 116Q${cx} 122 ${cx - 28} 116Z" fill="${fg}"/><path d="M${cx + 15} 56l-10-7v14zM${cx + 15} 56l10-7v14z" fill="${fg}"/>`;
+  else g += `<rect x="${cx - 6}" y="96" width="12" height="16" fill="${fg}"/>`;
+  g += `<circle cx="${cx}" cy="78" r="24" fill="${fg}"/></g>`;
+  // 패드
+  g += `<g transform="translate(${cx} 150)"><path d="M-30 0L-26 -34Q-25.6 -37 -22.5 -37H22.5Q25.6 -37 26 -34L30 0Z" ${bgs} stroke="${fg}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  if (state === 'run') g += `<g class="sc-pen"><path d="M31 -9L41 -34" stroke-width="8" stroke-linecap="round" ${bgs.replace('fill', 'stroke')}/><path d="M31 -9L41 -34" stroke="${fg}" stroke-width="3" stroke-linecap="round"/></g>`;
   g += `</g>`;
-  // 패드(뒷면이 보여요)와 손
-  g += `<g transform="translate(${cx} 151)"><path d="M-30 0L-26 -34Q-25.6 -37 -22.5 -37H22.5Q25.6 -37 26 -34L30 0Z" fill="#d6dbe5" stroke="#b9c0cd" stroke-width="1.5"/><circle cx="0" cy="-31" r="1.6" fill="#8d95a4"/><path d="M-6 -16a6 6 0 0 1 12 0" fill="none" stroke="#c3c9d4" stroke-width="1.6"/>`;
-  if (state === 'run') g += `<path class="sc-screen" d="M-26 -36L-12 -52M26 -36L12 -52" stroke="#bfe6ff" stroke-width="3" opacity=".5" stroke-linecap="round"/>`;
-  g += `<circle cx="-31" cy="-12" r="6" fill="${skin}"/><g class="sc-pen"><path d="M30 -10L39 -34" stroke="#ff6fa8" stroke-width="3.4" stroke-linecap="round"/><path d="M39 -34l1.6-4.2" stroke="#3a2a24" stroke-width="2" stroke-linecap="round"/><circle cx="31" cy="-12" r="6" fill="${skin}"/></g></g>`;
-  if (state === 'idle') g += `<g class="sc-z" font-family="Jua,sans-serif" fill="#9db4ff"><text x="${cx + 24}" y="52" font-size="13">z</text><text x="${cx + 33}" y="40" font-size="16">z</text><text x="${cx + 44}" y="26" font-size="19">Z</text></g>`;
-  if (state === 'pause') g += `<g class="sc-cup" transform="translate(${cx + 34} 36)"><rect x="-17" y="-14" width="34" height="26" rx="13" fill="#fff" opacity=".92"/><text x="0" y="5" font-size="15" text-anchor="middle">☕</text></g>`;
+  if (state === 'idle') g += `<g class="sc-z" font-family="Jua,sans-serif" fill="${fg}"><text x="${cx + 24}" y="50" font-size="13">z</text><text x="${cx + 33}" y="38" font-size="16">z</text><text x="${cx + 44}" y="24" font-size="19">Z</text></g>`;
   return g + '</g>';
 }
-function studySceneSVG(left, right, cls = '') {
-  // left/right: { look, state }
-  const h = new Date(Date.now() + KST_OFF).getUTCHours(), night = h >= 19 || h < 6;
-  const wall = night ? '#3b3050' : '#ffeedd', wall2 = night ? '#342a47' : '#fbe3cf', sky = night ? '#25335e' : '#bfe3ff', lampOn = left.state === 'run' || right.state === 'run' || night;
-  let s = `<svg class="sc ${cls}" viewBox="0 0 360 230" role="img" aria-label="책상에서 패드를 보며 공부하는 우리 둘"><rect width="360" height="230" fill="${wall}"/><rect y="150" width="360" height="80" fill="${wall2}"/>`;
-  s += `<rect x="138" y="16" width="84" height="60" rx="8" fill="${sky}" stroke="#fff" stroke-width="4"/><path d="M180 18v56M140 46h80" stroke="#fff" stroke-width="3"/>`;
-  s += night ? `<circle cx="203" cy="32" r="8" fill="#fff3c4"/><circle cx="207" cy="29" r="7" fill="${sky}"/><circle cx="156" cy="28" r="1.4" fill="#fff"/><circle cx="166" cy="62" r="1.2" fill="#fff"/><circle cx="210" cy="60" r="1.3" fill="#fff"/>`
-    : `<circle cx="160" cy="31" r="8" fill="#ffd25e"/><path d="M190 62q4-7 11-4 4-5 10 0 6 0 5 6h-26z" fill="#fff"/>`;
-  s += `<rect x="20" y="40" width="74" height="5" rx="2" fill="#b07548"/><rect x="26" y="22" width="8" height="18" rx="1.5" fill="#ff9cc6"/><rect x="35" y="25" width="7" height="15" rx="1.5" fill="#6b8be0"/><rect x="43" y="20" width="9" height="20" rx="1.5" fill="#1baf7a"/><path d="M56 40l4-17 6 1.5-4 15.5z" fill="#eda100"/><circle cx="80" cy="33" r="7" fill="#7cc98b"/><rect x="75" y="34" width="10" height="6" rx="2" fill="#c98d5e"/>`;
-  s += `<rect x="276" y="22" width="60" height="44" rx="5" fill="#fff" opacity=".85"/><text x="306" y="41" font-family="Jua,sans-serif" font-size="11" text-anchor="middle" fill="#ff4f9a">우리 같이</text><text x="306" y="56" font-family="Jua,sans-serif" font-size="11" text-anchor="middle" fill="#7a4a32">공부해요 ♥</text>`;
-  s += stPerson(left.look, left.state, 112) + stPerson(right.look, right.state, 248);
-  s += `<rect x="8" y="148" width="344" height="13" rx="5" fill="#c98d5e"/><rect x="16" y="161" width="328" height="69" fill="#b07548"/><path d="M16 172h328" stroke="#a0683d" stroke-width="2"/>`;
-  s += `<g transform="translate(36 148)">${lampOn ? '<path d="M-2 -40L-30 0H30z" fill="#ffe9a8" opacity=".28"/>' : ''}<ellipse cx="0" cy="-2" rx="13" ry="3.5" fill="#6b5b8a"/><path d="M0 -3V-30L9 -40" stroke="#6b5b8a" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M-4 -40H22L16 -54H2Z" fill="${lampOn ? '#ffd25e' : '#a99ac4'}"/></g>`;
-  s += `<g transform="translate(320 148)"><path d="M-10 -20h18v15a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#fff"/><path d="M8 -16a5 5 0 0 1 0 9" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M-6 -25q2-4 0-7M0 -25q2-4 0-7" stroke="#fff" stroke-width="1.6" fill="none" opacity=".7" stroke-linecap="round"/><text x="-1" y="-6" font-size="8" text-anchor="middle" fill="#ff4f9a">♥</text></g>`;
-  s += `<g transform="translate(180 148)"><rect x="-16" y="-8" width="32" height="8" rx="1.5" fill="#6b8be0"/><rect x="-13" y="-14" width="28" height="6" rx="1.5" fill="#ff9cc6"/><rect x="-15" y="-19" width="26" height="5" rx="1.5" fill="#eda100"/></g>`;
+function studySceneSVG(left, right, cls = '', pal) {
+  // pal이 없으면 화면 모드를 따라가요: 다크는 검은 바탕에 흰색, 라이트는 흰 바탕에 검은색
+  const fg = pal ? pal.fg : 'currentColor', bgs = `style="fill:${pal ? pal.bg : 'var(--sc-bg)'}"`;
+  let s = `<svg class="sc ${cls}" viewBox="0 0 360 230" role="img" aria-label="책상에서 패드를 보며 공부하는 우리 둘"${pal ? ` style="color:${pal.fg}"` : ''}><rect width="360" height="230" ${bgs}/>`;
+  s += stPerson(left.look, left.state, 112, fg, bgs) + stPerson(right.look, right.state, 248, fg, bgs);
+  s += `<rect x="16" y="150" width="328" height="6" rx="3" fill="${fg}"/><rect x="34" y="156" width="5" height="74" fill="${fg}"/><rect x="321" y="156" width="5" height="74" fill="${fg}"/>`;
   return s + '</svg>';
 }
-function stSceneFor(cls) {
+function stSceneFor(cls, pal) {
   const me = S.myId, pt = stPartner();
   const st = uid => { const n = uid && nowOf(uid); return n && n.state === 'run' ? 'run' : n && n.state === 'pause' ? 'pause' : 'idle'; };
   const a = { uid: me, look: lookOf(me), state: st(me) }, b = { uid: pt, look: pt ? lookOf(pt) : (lookOf(me) === 'boy' ? 'girl' : 'boy'), state: st(pt) };
   const [l, r] = a.look === 'girl' ? [b, a] : [a, b]; // 남자친구는 왼쪽, 여자친구는 오른쪽
-  return studySceneSVG(l, r, cls);
+  return studySceneSVG(l, r, cls, pal);
 }
 
 /* ---------- 잠금화면: 미디어 정보(지금 재생 중)로 공부 시간을 띄워요 ---------- */
@@ -4452,7 +4430,7 @@ const StLock = {
     if (this.art) return;
     this.art = new URL('icon.png', location.href).href;
     try {
-      const svg = stSceneFor('').replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" preserveAspectRatio="xMidYMid slice" ');
+      const svg = stSceneFor('', stDark() ? { bg: '#000', fg: '#fff' } : { bg: '#fff', fg: '#000' }).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" preserveAspectRatio="xMidYMid slice" ');
       const img = new Image();
       img.onload = () => { try { const c = document.createElement('canvas'); c.width = c.height = 512; c.getContext('2d').drawImage(img, 0, 0, 512, 512); this.art = c.toDataURL('image/png'); this.meta(); } catch (e) { /* 아이콘으로 */ } };
       img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
