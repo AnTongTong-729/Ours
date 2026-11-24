@@ -162,7 +162,13 @@ function changeMessages(p) {
       const when = d.openStage ? `토끼가 ${PET_STAGE[d.openStage] || '다음 단계'}가 되면 열려요` : d.openAt ? md(d.openAt) + '에 열려요' : '';
       return to([d.to]).filter(u => u !== actor).map(u => ({ to: u, cat: 'dates', title: d.openStage ? '토끼캡슐 편지' : '타임캡슐 편지', body: `${name}${j} 편지를 남겼어요. ${when}`.trim(), url: './#letters', tag: 'letter-' + (d.openStage ? 'pet' + d.openStage : d.openAt || '') }));
     }
-    case 'plans': return others.map(u => ({ to: u, cat: 'dates', title: '새 약속', body: `${name}${j} 약속을 추가했어요: ${clip(d.title, 30)}${d.date ? ' (' + md(d.date) + ')' : ''}`, url: './#calendar', tag: 'plan-' + (d.date || '') }));
+    case 'plans': { // who: 'us' = 우리 약속, 아니면 그 사람의 일정
+      const who = d.who && d.who !== 'us' ? d.who : 'us';
+      return others.map(u => {
+        const what = who === 'us' ? '약속' : who === u ? '내 일정' : who === actor ? '일정' : nick(map, who) + ' 일정';
+        return { to: u, cat: 'dates', title: who === 'us' ? '새 약속' : '새 일정', body: `${name}${j} ${what}을 추가했어요: ${clip(d.title, 30)}${d.date ? ' (' + md(d.date) + ')' : ''}`, url: './#calendar', tag: 'plan-' + (p.path || d.date || '') };
+      });
+    }
     case 'pings': return to([d.to]).map(u => ({ to: u, cat: 'test', title: 'ours', body: '알림이 잘 와요! 이제 소식을 놓치지 않을 거예요 ♥', url: './#profile', tag: 'ping' }));
     default: return [];
   }
@@ -203,11 +209,20 @@ function tickMessages(p, nowMs) {
       if (birthdayKeyFor(map[other].birthday, Number(today.slice(0, 4))) === today) msgs.push({ to: uid, cat: 'dates', title: '생일', body: `오늘은 ${nm} 생일이에요! 축하해 주세요`, url: './#calendar', tag: 'bday-' + today });
       if (birthdayKeyFor(map[other].birthday, Number(tomorrow.slice(0, 4))) === tomorrow) msgs.push({ to: uid, cat: 'dates', title: '생일', body: `내일은 ${nm} 생일이에요`, url: './#calendar', tag: 'bday-' + tomorrow });
     }
-    for (const pl of p.plans || []) {
-      if (!pl || !pl.date) continue;
-      const when = [pl.time, pl.place].filter(Boolean).join(' · ');
-      if (pl.date === today) msgs.push({ to: uid, cat: 'dates', title: '오늘 약속', body: `${clip(pl.title, 30)}${when ? ' (' + when + ')' : ''}`, url: './#calendar', tag: 'plan-' + today });
-      if (pl.date === tomorrow) msgs.push({ to: uid, cat: 'dates', title: '내일 약속', body: `${clip(pl.title, 30)}${when ? ' (' + when + ')' : ''}`, url: './#calendar', tag: 'plan-' + tomorrow });
+    // 하루에 일정이 여러 개면 한 알림에 모아서 보내요 (같은 tag라 따로 보내면 마지막 것만 남아요)
+    for (const [key, word] of [[today, '오늘'], [tomorrow, '내일']]) {
+      const list = (p.plans || []).filter(pl => pl && pl.date === key && pl.title)
+        .sort((a, b) => String(a.time || '').localeCompare(String(b.time || '')));
+      if (!list.length) continue;
+      const line = pl => {
+        const who = pl.who && pl.who !== 'us' ? pl.who : 'us';
+        const tag = who === 'us' ? '' : who === uid ? '[내 일정] ' : `[${nick(map, who)}] `;
+        const when = [pl.time ? pl.time + (pl.endTime ? '~' + pl.endTime : '') : '', pl.place].filter(Boolean).join(' · ');
+        return `${tag}${clip(pl.title, 30)}${when ? ' (' + when + ')' : ''}`;
+      };
+      const allUs = list.every(pl => !pl.who || pl.who === 'us');
+      const title = list.length > 1 ? `${word} 일정 ${list.length}개` : `${word} ${allUs ? '약속' : '일정'}`;
+      msgs.push({ to: uid, cat: 'dates', title, body: list.map(line).join('\n'), url: './#calendar', tag: 'plan-' + key });
     }
     for (const lt of p.letters || []) {
       if (lt && lt.openAt === today && lt.to === uid) msgs.push({ to: uid, cat: 'dates', title: '편지가 열렸어요', body: `${nick(map, lt.author)}의 타임캡슐 편지가 오늘 열렸어요`, url: './#letters', tag: 'letter-open-' + today });

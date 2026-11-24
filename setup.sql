@@ -61,9 +61,9 @@ begin
 exception when duplicate_object then null;
 end $$;
 
--- 3) 사진·그림 저장소 (비공개, 파일당 10MB, JPG/PNG만)
+-- 3) 사진·그림·스토리 동영상 저장소 (비공개, 파일당 50MB, JPG/PNG/MP4/MOV/WebM)
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('photos', 'photos', false, 10485760, array['image/jpeg', 'image/png'])
+values ('photos', 'photos', false, 52428800, array['image/jpeg', 'image/png', 'video/mp4', 'video/quicktime', 'video/webm'])
 on conflict (id) do nothing;
 
 drop policy if exists "couple photo read"   on storage.objects;

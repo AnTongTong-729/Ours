@@ -3,7 +3,7 @@
  * 앱(index.html)과 Supabase를 이어 주는 연결부예요.
  *  - 로그인:   Supabase Auth (이메일 + 비밀번호)
  *  - 글·답·좋아요 등: docs 표 하나에 JSON으로 저장 (path = "posts/abc" 같은 주소)
- *  - 사진·그림: 비공개 Storage 버킷 "photos" + 7일짜리 서명 URL
+ *  - 사진·그림·스토리 동영상: 비공개 Storage 버킷 "photos" + 7일짜리 서명 URL
  *  - 실시간 반영: Realtime(postgres_changes)로 상대가 쓴 글이 바로 보여요
  * 앱 쪽 코드는 db / user / assets 세 가지 기능만 알면 돼서, 이 파일만 바꾸면 다른 백엔드로도 옮길 수 있어요.
  */
@@ -190,7 +190,8 @@
   const assets = {
     async upload(blob, opts) {
       const type = (opts && opts.type) || blob.type || 'image/jpeg';
-      const path = `${uid}/${Date.now().toString(36)}-${rid()}.${type === 'image/png' ? 'png' : 'jpg'}`;
+      const ext = { 'image/png': 'png', 'video/mp4': 'mp4', 'video/quicktime': 'mov', 'video/webm': 'webm' }[type] || 'jpg';
+      const path = `${uid}/${Date.now().toString(36)}-${rid()}.${ext}`;
       const { error } = await client().storage.from(BUCKET).upload(path, blob, { contentType: type, cacheControl: '31536000', upsert: false });
       if (error) throw mapErr(error, 'upstream_error');
       return { id: path, url: photoUrl(path), sizeBytes: blob.size, contentType: type };
